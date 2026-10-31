@@ -1,0 +1,79 @@
+[
+  {
+    "map_node": "N1",
+    "host_scene_id": "SC_01_OPEN",
+    "map_phase": "scene",
+    "map_order": 1,
+    "map_title": "山道雨歇",
+    "objective": "沿山道赶往云归山门",
+    "tags": [
+      "SAFE",
+      "DIALOGUE",
+      "CHOICE"
+    ]
+  },
+  {
+    "map_node": "N2",
+    "host_scene_id": "SC_02_MEET_A",
+    "map_phase": "scene",
+    "map_order": 2,
+    "map_title": "岔口笛声",
+    "objective": "前路有妖气，先过岔口",
+    "tags": [
+      "DIALOGUE",
+      "CHOICE"
+    ]
+  },
+  {
+    "map_node": "N3",
+    "host_scene_id": "SC_03_TOWN",
+    "map_phase": "pre_battle",
+    "map_order": 3,
+    "map_title": "山门前",
+    "objective": "查清驿亭异状",
+    "tags": [
+      "DIALOGUE"
+    ]
+  },
+  {
+    "map_node": "N4",
+    "host_scene_id": "SC_03_TOWN",
+    "map_phase": "battle",
+    "map_order": 4,
+    "map_title": "教学战驿道",
+    "objective": "击败拦路的唤名妖物",
+    "tags": [
+      "COMBAT"
+    ],
+    "encounter_id": "ENC_TUTORIAL_01"
+  },
+  {
+    "map_node": "N5",
+    "host_scene_id": "SC_03_TOWN",
+    "map_phase": "after_tutorial",
+    "map_order": 5,
+    "map_title": "战后驿亭",
+    "objective": "整备片刻，再进镇",
+    "tags": [
+      "SAFE",
+      "REWARD",
+      "DIALOGUE"
+    ],
+    "reward_tip": "雾纹残晶 ×1",
+    "end_dialogue_id": "DLG_AFTER_TUTORIAL_01",
+    "flow_id": "FLOW_AFTER_TUTORIAL"
+  },
+  {
+    "map_node": "N6",
+    "host_scene_id": "SC_04_CHOICE",
+    "map_phase": "chapter_end",
+    "map_order": 6,
+    "map_title": "镇口钩",
+    "objective": "镇口有了新的消息……",
+    "tags": [
+      "DIALOGUE"
+    ],
+    "end_card_title": "第一章 · 未完",
+    "end_card_body": "镇口已闻人声。有人在打听昨夜的「唤名」与伤者——路还长，信还在怀里。"
+  }
+]

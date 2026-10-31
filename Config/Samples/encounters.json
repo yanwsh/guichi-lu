@@ -1,0 +1,8 @@
+[
+  {
+    "encounter_id": "ENC_TUTORIAL_01",
+    "kind": "tutorial",
+    "enemy_ids": ["EN_MOB_MELEE"],
+    "on_win_flow": "FLOW_AFTER_TUTORIAL"
+  }
+]

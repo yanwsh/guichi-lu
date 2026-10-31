@@ -1,0 +1,9 @@
+[
+  {
+    "link_id": "LINK_TONGXIN",
+    "name": "同心御",
+    "member_ids": ["CH_A", "CH_B"],
+    "unlock_flag": "link_tongxin_unlocked",
+    "once_per_battle": true
+  }
+]

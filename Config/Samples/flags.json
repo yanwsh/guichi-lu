@@ -1,0 +1,7 @@
+[
+  { "flag_id": "letter_peeked", "default": 0, "note": "开场是否窥信；影响后续 1～2 句，不锁主线" },
+  { "flag_id": "qingge_joined_early", "default": 0, "note": "是否主动允清歌同行；0 则首战后强制入队" },
+  { "flag_id": "branch_save_life", "default": 0, "note": "救人分支；影响连携早解锁" },
+  { "flag_id": "branch_chase", "default": 0, "note": "追凶分支；连携延至章末战前" },
+  { "flag_id": "link_tongxin_unlocked", "default": 0, "note": "连携「同心御」解锁" }
+]
