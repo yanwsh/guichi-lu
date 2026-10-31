@@ -63,7 +63,7 @@
     "bg_key": "W0/scenes/SC_04_CHOICE",
     "interactables": [],
     "enter_dialogue_id": "DLG_MEET_B_01",
-    "next_scene_id": "SC_05_BOSS",
+    "next_scene_id": "",
     "map_node": "N6",
     "map_order": 6,
     "map_title": "镇口钩",

@@ -36,7 +36,7 @@ npm run preview
 - 模块：`src/data/`（types+loader）· `src/save/gameState.ts`（localStorage）· `src/flow/flowController.ts` · `src/scene/scenePresenter.ts` · `src/dialog/dialogRunner.ts`（DOM）· `src/battle/battleLogic.ts` · `src/map/chapterMap.ts`
 - 配置：源 `Config/Samples/*.json` → 运行时拷贝 `public/config/*.json`，`fetch(BASE_URL+"config/<表>.json")`
 - 底板：`bg_key` `W0/scenes/SC_xx` → `public/W0/scenes/SC_xx_v0.png`
-- 可玩路径：标题 → SC_01_OPEN 对白 → SC_02_MEET_A → SC_03_TOWN「调查 search_01」触发 ENC_TUTORIAL_01 → 攻击胜/撤退回场景 → SC_04_CHOICE 抉择写 branch_save_life / branch_chase → SC_05_BOSS 对白
+- 可玩路径：标题 → SC_01_OPEN 对白 → SC_02_MEET_A → SC_03_TOWN「调查 search_01」触发 ENC_TUTORIAL_01 → 攻击胜/撤退回场景 → SC_04_CHOICE 抉择写 branch_save_life / branch_chase → 结束卡「第一章 · 未完」（SC_05 Boss 后置，不作为本章必达）
 - 里程碑：灰盒周 2026-12-21～12-26；M3 待下周锁定；不上 Capacitor，PWA 后补
 
 - 2026-10-31：开场短剧本（苏禾 v0.1：DLG_OPEN_01/02、DLG_MEET_A_01/02、DLG_TOWN_01→ENC_TUTORIAL_01，flags letter_peeked/qingge_joined_early）+ 雾纹山魈战斗贴图（`public/enemies/EN_MOB_MELEE.png`，Plane h=2.4）已挂。对白支持 `next_dialogue_id` / `choices[].followup_lines` / `start_encounter_id`。
