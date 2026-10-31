@@ -1,0 +1,255 @@
+{
+  "host_scene_id": "SC_03_TOWN",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/场景/SC_03_walkmap/",
+  "walkable_mask": "SC_03_TOWN_walkable.png",
+  "safe_ui": {
+    "joystick": {
+      "x": 0,
+      "y": 1620,
+      "w": 280,
+      "h": 300
+    },
+    "interact_btn": {
+      "x": 800,
+      "y": 1620,
+      "w": 280,
+      "h": 300
+    },
+    "dialog_bar_max_y": 1600
+  },
+  "occlusion_sort": [
+    {
+      "id": "occ_pavilion_pillar",
+      "foot_y": 470,
+      "note": "hand-paint; eng stub was 620"
+    },
+    {
+      "id": "occ_gate_pillar_L",
+      "foot_y": 1620
+    },
+    {
+      "id": "occ_gate_pillar_R",
+      "foot_y": 1620,
+      "note": "added in art v0.2"
+    },
+    {
+      "id": "mid_houses",
+      "sort_y": 1460,
+      "note": "was 1450 in art v0.1"
+    }
+  ],
+  "zones": [
+    {
+      "zone_id": "N3",
+      "host_scene_id": "SC_03_TOWN",
+      "spawn": {
+        "x": 530,
+        "y": 1750
+      },
+      "bounds": {
+        "x": 435,
+        "y": 1450,
+        "w": 193,
+        "h": 470
+      },
+      "objective": "查清驿亭异状",
+      "map_phase": "pre_battle",
+      "zone_label": "山门前"
+    },
+    {
+      "zone_id": "N4",
+      "host_scene_id": "SC_03_TOWN",
+      "spawn": {
+        "x": 536,
+        "y": 1041
+      },
+      "bounds": {
+        "x": 262,
+        "y": 866,
+        "w": 548,
+        "h": 353
+      },
+      "objective": "击败拦路的唤名妖物",
+      "map_phase": "battle",
+      "zone_label": "教学战驿道"
+    },
+    {
+      "zone_id": "N5",
+      "host_scene_id": "SC_03_TOWN",
+      "spawn": {
+        "x": 535,
+        "y": 650
+      },
+      "bounds": {
+        "x": 470,
+        "y": 435,
+        "w": 130,
+        "h": 427
+      },
+      "objective": "整备片刻，再进镇",
+      "map_phase": "after_tutorial",
+      "zone_label": "战后驿亭"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_N3_ENTER",
+      "zone_id": "N3",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 435,
+        "y": 1450,
+        "w": 193,
+        "h": 470
+      },
+      "once": true,
+      "start_dialogue_id": "DLG_TOWN_01"
+    },
+    {
+      "id": "TR_N3_SEARCH",
+      "zone_id": "N3",
+      "type": "interact",
+      "shape": {
+        "kind": "circle",
+        "x": 530,
+        "y": 1580,
+        "r": 100
+      },
+      "once": true,
+      "require_flags": [
+        "dlg_town_01_done"
+      ],
+      "set_flags": [
+        "search_01"
+      ],
+      "unlock_path_id": "PATH_N3_N4",
+      "label": "调查爪痕"
+    },
+    {
+      "id": "TR_N3_ALTAR",
+      "zone_id": "N3",
+      "type": "interact",
+      "shape": {
+        "kind": "circle",
+        "x": 365,
+        "y": 1620,
+        "r": 85
+      },
+      "once": true,
+      "label": "香案",
+      "hint": "香案倾倒，残香仍温。"
+    },
+    {
+      "id": "TR_N4_ENC",
+      "zone_id": "N4",
+      "type": "enter",
+      "shape": {
+        "kind": "circle",
+        "x": 536,
+        "y": 1041,
+        "r": 200
+      },
+      "once": false,
+      "require_flags": [
+        "search_01"
+      ],
+      "encounter_id": "ENC_TUTORIAL_01",
+      "note": "plaza center; retry in-zone on defeat"
+    },
+    {
+      "id": "TR_N5_ENTER",
+      "zone_id": "N5",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 470,
+        "y": 435,
+        "w": 130,
+        "h": 427
+      },
+      "once": true,
+      "require_flags": [
+        "tutorial_won"
+      ],
+      "start_dialogue_id": "DLG_AFTER_TUTORIAL_01",
+      "reward": "IT_MIST_SHARD"
+    },
+    {
+      "id": "TR_N5_EXIT",
+      "zone_id": "N5",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 470,
+        "y": 435,
+        "w": 130,
+        "h": 80
+      },
+      "once": false,
+      "require_flags": [
+        "mist_shard_taken"
+      ],
+      "unlock_path_id": "PATH_N5_TO_N6",
+      "label": "进镇",
+      "flow_to": "SC_04_CHOICE"
+    }
+  ],
+  "paths": [
+    {
+      "id": "PATH_N3_N4",
+      "from_zone": "N3",
+      "to_zone": "N4",
+      "locked_by_default": true,
+      "unlock_flag": "search_01",
+      "gate": {
+        "x": 435,
+        "y": 1180,
+        "w": 193,
+        "h": 100
+      }
+    },
+    {
+      "id": "PATH_N4_N5",
+      "from_zone": "N4",
+      "to_zone": "N5",
+      "locked_by_default": true,
+      "unlock_flag": "tutorial_won",
+      "gate": {
+        "x": 470,
+        "y": 800,
+        "w": 130,
+        "h": 100
+      }
+    },
+    {
+      "id": "PATH_N5_TO_N6",
+      "from_zone": "N5",
+      "to_zone": "N6",
+      "locked_by_default": true,
+      "unlock_flag": "mist_shard_taken",
+      "scene_exit": "SC_04_CHOICE"
+    }
+  ],
+  "ui_map_labels": {
+    "N1": "山道雨歇",
+    "N2": "岔口笛声",
+    "N3": "山门前",
+    "N4": "教学战驿道",
+    "N5": "战后驿亭",
+    "N6": "镇口钩"
+  },
+  "meta": {
+    "version": "0.3.1",
+    "author": "苏禾",
+    "changelog": "occlusion only: mid_houses sortY 1460; extra right gate pillar foot_y 1620; trigger coords unchanged from v0.3",
+    "art_walkmap": "SC_03_walkmap hand-paint v0.2"
+  }
+}

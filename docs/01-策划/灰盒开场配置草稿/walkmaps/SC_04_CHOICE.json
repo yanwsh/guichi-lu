@@ -1,0 +1,354 @@
+{
+  "host_scene_id": "SC_04_CHOICE",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/场景/SC_04_walkmap/",
+  "walkable_mask": "SC_04_CHOICE_walkable.png",
+  "art_version": "0.2.1",
+  "version": "0.1",
+  "notes": "no new flags; branch_save_life/branch_chase/link_tongxin_unlocked only; end at tea front (529,628); ~0.90 outer ring before inner",
+  "safe_ui": {
+    "joystick": {
+      "x": 0,
+      "y": 1620,
+      "w": 280,
+      "h": 300
+    },
+    "interact_btn": {
+      "x": 800,
+      "y": 1620,
+      "w": 280,
+      "h": 300
+    },
+    "dialog_bar_max_y": 1600
+  },
+  "occlusion_sort": [
+    {
+      "id": "mid_courtyard",
+      "sort_y": 1220
+    },
+    {
+      "id": "occ_eastroofs",
+      "foot_y": 730
+    },
+    {
+      "id": "occ_teastall",
+      "foot_y": 595,
+      "note": "roof; end point is stone in front"
+    }
+  ],
+  "zones": [
+    {
+      "zone_id": "N6",
+      "host_scene_id": "SC_04_CHOICE",
+      "spawn": {
+        "x": 112,
+        "y": 1800
+      },
+      "bounds": {
+        "x": 160,
+        "y": 350,
+        "w": 840,
+        "h": 1200
+      },
+      "objective": "结识小满；关键抉择；第一章结束卡",
+      "zone_label": "镇口钩"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_N6_ENTER",
+      "zone": "N6",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 1650,
+        "w": 280,
+        "h": 270
+      },
+      "once": true,
+      "result": {
+        "flavor": "镇口雾气未散",
+        "no_flag": true
+      }
+    },
+    {
+      "id": "TR_N6_TEA",
+      "zone": "N6",
+      "type": "interact",
+      "shape": {
+        "kind": "circle",
+        "x": 529,
+        "y": 628,
+        "r": 90
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_MEET_B_01",
+        "next_dialogue_id": "DLG_CHOICE_01",
+        "note": "SAVE/CHASE followups set existing flags only"
+      }
+    },
+    {
+      "id": "TR_N6_SIDE_HINT",
+      "zone": "N6",
+      "type": "enter",
+      "shape": {
+        "kind": "circle",
+        "x": 700,
+        "y": 600,
+        "r": 50
+      },
+      "once": true,
+      "result": {
+        "flavor": "绕屋可回外环",
+        "no_flag": true
+      }
+    },
+    {
+      "id": "TR_N6_DEAD_HINT",
+      "zone": "N6",
+      "type": "enter",
+      "shape": {
+        "kind": "circle",
+        "x": 1044,
+        "y": 1027,
+        "r": 45
+      },
+      "once": true,
+      "result": {
+        "flavor": "巷底堆货，过不去",
+        "no_flag": true
+      }
+    },
+    {
+      "id": "TR_N6_FOG_HINT",
+      "zone": "N6",
+      "type": "enter",
+      "shape": {
+        "kind": "circle",
+        "x": 555,
+        "y": 112,
+        "r": 55
+      },
+      "once": true,
+      "result": {
+        "flavor": "更深的镇，改日再来",
+        "no_flag": true
+      }
+    },
+    {
+      "id": "TR_N6_END_CARD",
+      "zone": "N6",
+      "type": "enter",
+      "shape": {
+        "kind": "circle",
+        "x": 529,
+        "y": 628,
+        "r": 90
+      },
+      "once": true,
+      "gate": {
+        "require_dialogue_done": "DLG_CHOICE_01"
+      },
+      "result": {
+        "end_card": "第一章 · 未完",
+        "hook_scene": "SC_05_BOSS"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "id": "PATH_N6_ENTRY",
+      "waypoints": [
+        {
+          "x": 112,
+          "y": 1919
+        },
+        {
+          "x": 206,
+          "y": 1763
+        },
+        {
+          "x": 281,
+          "y": 1650
+        },
+        {
+          "x": 356,
+          "y": 1500
+        },
+        {
+          "x": 431,
+          "y": 1444
+        }
+      ]
+    },
+    {
+      "id": "PATH_N6_OUTER_RING",
+      "waypoints": [
+        {
+          "x": 431,
+          "y": 1444
+        },
+        {
+          "x": 178,
+          "y": 1163
+        },
+        {
+          "x": 160,
+          "y": 844
+        },
+        {
+          "x": 206,
+          "y": 450
+        },
+        {
+          "x": 338,
+          "y": 371
+        },
+        {
+          "x": 563,
+          "y": 360
+        },
+        {
+          "x": 825,
+          "y": 384
+        },
+        {
+          "x": 947,
+          "y": 788
+        },
+        {
+          "x": 994,
+          "y": 1050
+        },
+        {
+          "x": 960,
+          "y": 1294
+        },
+        {
+          "x": 600,
+          "y": 1444
+        },
+        {
+          "x": 431,
+          "y": 1444
+        }
+      ],
+      "note": "clockwise ~0.90 lap before SE inner entry"
+    },
+    {
+      "id": "PATH_N6_INNER",
+      "waypoints": [
+        {
+          "x": 878,
+          "y": 1378
+        },
+        {
+          "x": 825,
+          "y": 1313
+        },
+        {
+          "x": 544,
+          "y": 1354
+        },
+        {
+          "x": 260,
+          "y": 1000
+        },
+        {
+          "x": 544,
+          "y": 735
+        },
+        {
+          "x": 534,
+          "y": 735
+        },
+        {
+          "x": 529,
+          "y": 638
+        },
+        {
+          "x": 529,
+          "y": 628
+        }
+      ]
+    },
+    {
+      "id": "PATH_N6_SIDE_LOOP",
+      "waypoints": [
+        {
+          "x": 825,
+          "y": 384
+        },
+        {
+          "x": 703,
+          "y": 450
+        },
+        {
+          "x": 684,
+          "y": 600
+        },
+        {
+          "x": 713,
+          "y": 746
+        },
+        {
+          "x": 881,
+          "y": 754
+        },
+        {
+          "x": 947,
+          "y": 788
+        }
+      ],
+      "loop_rejoin": true
+    },
+    {
+      "id": "PATH_N6_EAST_DEAD",
+      "waypoints": [
+        {
+          "x": 990,
+          "y": 1050
+        },
+        {
+          "x": 1035,
+          "y": 1028
+        },
+        {
+          "x": 1044,
+          "y": 1027
+        }
+      ],
+      "dead_end": true
+    },
+    {
+      "id": "PATH_N6_FOG_BAIT",
+      "waypoints": [
+        {
+          "x": 563,
+          "y": 360
+        },
+        {
+          "x": 548,
+          "y": 263
+        },
+        {
+          "x": 544,
+          "y": 178
+        },
+        {
+          "x": 555,
+          "y": 112
+        }
+      ],
+      "fog_wall": true
+    }
+  ]
+}

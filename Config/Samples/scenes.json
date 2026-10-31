@@ -1,0 +1,91 @@
+[
+  {
+    "scene_id": "SC_01_OPEN",
+    "name": "开场·山道",
+    "bg_key": "W0/scenes/SC_01_OPEN",
+    "interactables": [
+      "look_fog"
+    ],
+    "enter_dialogue_id": "DLG_OPEN_01",
+    "next_scene_id": "SC_02_MEET_A",
+    "interact_encounters": {},
+    "map_node": "N1",
+    "map_order": 1,
+    "map_title": "山道雨歇",
+    "objective": "沿山道赶往云归山门",
+    "tags": [
+      "SAFE",
+      "DIALOGUE",
+      "CHOICE"
+    ]
+  },
+  {
+    "scene_id": "SC_02_MEET_A",
+    "name": "结识陆清歌",
+    "bg_key": "W0/scenes/SC_02_MEET_A",
+    "interactables": [],
+    "enter_dialogue_id": "DLG_MEET_A_01",
+    "next_scene_id": "SC_03_TOWN",
+    "map_node": "N2",
+    "map_order": 2,
+    "map_title": "岔口笛声",
+    "objective": "前路有妖气，先过岔口",
+    "tags": [
+      "DIALOGUE",
+      "CHOICE"
+    ]
+  },
+  {
+    "scene_id": "SC_03_TOWN",
+    "name": "山门驿亭",
+    "bg_key": "W0/scenes/SC_03_TOWN",
+    "interactables": [
+      "search_01"
+    ],
+    "enter_dialogue_id": "DLG_TOWN_01",
+    "next_scene_id": "SC_04_CHOICE",
+    "interact_encounters": {
+      "search_01": "ENC_TUTORIAL_01"
+    },
+    "map_node": "N3",
+    "map_order": 3,
+    "map_title": "山门前",
+    "objective": "查清驿亭异状",
+    "tags": [
+      "DIALOGUE",
+      "COMBAT",
+      "REWARD"
+    ]
+  },
+  {
+    "scene_id": "SC_04_CHOICE",
+    "name": "乡镇·结识宁小满与关键抉择",
+    "bg_key": "W0/scenes/SC_04_CHOICE",
+    "interactables": [],
+    "enter_dialogue_id": "DLG_MEET_B_01",
+    "next_scene_id": "",
+    "map_node": "N6",
+    "map_order": 6,
+    "map_title": "镇口钩",
+    "objective": "镇口有了新的消息……",
+    "tags": [
+      "DIALOGUE"
+    ]
+  },
+  {
+    "scene_id": "SC_05_BOSS",
+    "name": "章末 Boss",
+    "bg_key": "W0/scenes/SC_05_BOSS",
+    "interactables": [],
+    "enter_dialogue_id": "DLG_BOSS_01",
+    "next_scene_id": "",
+    "map_order": 99,
+    "map_title": "云归山影（后置）",
+    "objective": "六站地图不占位",
+    "tags": [
+      "DIALOGUE",
+      "COMBAT"
+    ],
+    "map_deferred": true
+  }
+]

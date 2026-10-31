@@ -1,0 +1,33 @@
+{
+  "cell": 16,
+  "walkable_threshold": 128,
+  "speed_px": 240,
+  "camera_view_scale": 0.68,
+  "interact_edge_pad": 20,
+  "scroll": {
+    "enabled": false,
+    "y_offset": 1680,
+    "initial_scroll_y": 1680,
+    "note": "M1 stays on the 1080x1920 board. y_scroll = y_single + y_offset. North of the scroll is not walkable. Do not switch the camera."
+  },
+  "slices": [
+    { "id": "far", "file": "SC_03_TOWN_far.png", "role": "far" },
+    { "id": "ground", "file": "SC_03_TOWN_ground.png", "role": "ground" },
+    { "id": "mid_houses", "file": "SC_03_TOWN_mid.png", "role": "ysort", "occlusion_id": "mid_houses" },
+    {
+      "id": "occ_pavilion_pillar",
+      "file": "SC_03_TOWN_occ_pillar.png",
+      "role": "ysort",
+      "occlusion_id": "occ_pavilion_pillar",
+      "crop": { "x": 420, "y": 360, "w": 230, "h": 120 }
+    },
+    {
+      "id": "occ_gate_pillars",
+      "file": "SC_03_TOWN_occ_pillar.png",
+      "role": "ysort",
+      "occlusion_id": "occ_gate_pillar_L",
+      "crop": { "x": 290, "y": 1210, "w": 500, "h": 420 },
+      "note": "Left and right gate pillars share foot_y 1620, so one slice covers both."
+    }
+  ]
+}

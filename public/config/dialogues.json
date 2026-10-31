@@ -1,0 +1,313 @@
+[
+  {
+    "dialogue_id": "DLG_OPEN_01",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "雨刚歇，山道仍湿。薄雾贴着石阶，像不肯散的旧事。"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "……迟了十年。这一次，不能再迟。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "他摸了摸发间旧簪，把一封不敢拆的信塞回怀里——再晚一日，那人怕是真要成仙去了。"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "云归山。先到山门，再谈其余。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "信角被雨洇开一点。他的指尖停在封口上。"
+      }
+    ],
+    "choices": [
+      {
+        "choice_id": "CHO_OPEN_LETTER",
+        "text": "拆开看一眼",
+        "set_flag": "letter_peeked",
+        "value": 1
+      },
+      {
+        "choice_id": "CHO_KEEP_SEALED",
+        "text": "先赶路，见面再交",
+        "set_flag": "letter_peeked",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "dialogue_id": "DLG_OPEN_LETTER_PEEK",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "墨迹只有半句——「若我迟归，莫寻。」其余被水渍吞了。"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "……偏偏叫人寻。"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_OPEN_LETTER_KEEP",
+    "lines": [
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "见面再说。路上的风，听不见心里的话。"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_MEET_A_01",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "岔口传来低低的笛声。一名白紫衣裳的女子正为倒地的山民安神；雾里隐有腥甜妖气。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "莫再往前。岔口的风不对——有东西跟着活人的气味走。"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "我要去云归山门。绕不开，便走过去。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "前路有妖气，你一个人走不过去。我姓陆，单名清歌。山民说夜里有人被「唤名」引上岔路……你怀里那封信，怕也与此有关。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "我可以护你到山门。你若嫌生人，我便只在笛音可及之处跟着。"
+      }
+    ],
+    "choices": [
+      {
+        "choice_id": "CHO_ACCEPT_QINGGE",
+        "text": "有劳同行",
+        "set_flag": "qingge_joined_early",
+        "value": 1
+      },
+      {
+        "choice_id": "CHO_POLITE_REFUSE",
+        "text": "不必麻烦，我自己走",
+        "set_flag": "qingge_joined_early",
+        "value": 0
+      }
+    ]
+  },
+  {
+    "dialogue_id": "DLG_TOWN_01",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "山门影在雾里晃。驿亭空着，香案倾倒，地上有新鲜的爪痕与半块被撕碎的路引。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "听见了吗？它在学人说话——专挑你心里最想应答的那一声。"
+      },
+      {
+        "speaker": "???",
+        "portrait_key": "",
+        "text": "归迟……迟了十年，还要再迟吗？"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "……你不是他。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "应声就会把魂引偏。拔剑——这是山门前最后一道拦路，不除掉，信送不到任何人手里。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "雾裂开。妖物显形，气味与信角的旧墨混在一起。"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_AFTER_TUTORIAL_01",
+    "lines": [
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "它认得这封信的气味……山上的事，比驿报写的更脏。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "进镇。还有人在打听同一桩「唤名」——或许能问到你要找的人。"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_MEET_B_01",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "镇口茶棚挤着看热闹的人。橙黄短打、双丸子头的姑娘正把短杖往地上一顿，追问伤者去向。"
+      },
+      {
+        "speaker": "宁小满",
+        "portrait_key": "ning-xiaoman",
+        "text": "昨夜黑影往后山跑——伤者还躺在棚里喘，你们俩是来帮人的，还是也只顾赶路？"
+      },
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "……先说清楚，伤者与「唤名」可有关。"
+      },
+      {
+        "speaker": "宁小满",
+        "portrait_key": "ning-xiaoman",
+        "text": "我叫宁小满。伤者被唤了半句名就晕了，凶手没走远。旁人不敢追——你们敢不敢？"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "敢。只是要分先后。"
+      }
+    ],
+    "choices": [],
+    "next_dialogue_id": "DLG_CHOICE_01"
+  },
+  {
+    "dialogue_id": "DLG_CHOICE_01",
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "棚里传来压抑的呻吟；后山岔口，雾里似有衣角一闪。两边都等不及。"
+      },
+      {
+        "speaker": "宁小满",
+        "portrait_key": "ning-xiaoman",
+        "text": "那人受了伤，凶手就要跑远了！——你们选一个：先救人，还是先追？"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "两条路都能到山门。只是……选了，后头的人心气就不一样。"
+      }
+    ],
+    "choices": [
+      {
+        "choice_id": "CHO_SAVE_LIFE",
+        "text": "先救人",
+        "set_flag": "branch_save_life",
+        "value": 1
+      },
+      {
+        "choice_id": "CHO_CHASE",
+        "text": "追凶手",
+        "set_flag": "branch_chase",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "dialogue_id": "DLG_CHOICE_SAVE_01",
+    "lines": [
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "人还在，就先留住。凶手的脚印，雨停以前不会全灭。"
+      },
+      {
+        "speaker": "宁小满",
+        "portrait_key": "ning-xiaoman",
+        "text": "好！这才像话。——清歌姐，你护脉，我去找止血的药草。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "……嗯。小满，你站我左手边。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "三人合力稳住伤势。宁小满擦了擦汗，第一次把短杖朝沈归迟一指：「往后打架，你喊一声，我跟清歌姐一块上。」"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "（灰盒：救人线 → 可早解锁连携「同心御」· flag link_tongxin_unlocked=1）"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_CHOICE_CHASE_01",
+    "lines": [
+      {
+        "speaker": "沈归迟",
+        "portrait_key": "shen-guichi",
+        "text": "留下伤者给镇医。黑影不截住，还会再唤人。"
+      },
+      {
+        "speaker": "宁小满",
+        "portrait_key": "ning-xiaoman",
+        "text": "……行。你狠得干净。——那我跟着，别想把我甩在茶棚。"
+      },
+      {
+        "speaker": "陆清歌",
+        "portrait_key": "lu-qingge",
+        "text": "笛声能逼它显形。追可以，别应它的唤名。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "三人冲入后山薄雾。宁小满咬着牙，话少了几分热闹。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "（灰盒：追凶线 → 连携延至章末战前再解锁；link_tongxin_unlocked 暂保持 0）"
+      }
+    ],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_BOSS_01",
+    "lines": [
+      {
+        "speaker": "???",
+        "portrait_key": "",
+        "text": "来得正好，归迟之人。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "（灰盒：章末战已后置，不在本段接入。）"
+      }
+    ],
+    "choices": []
+  }
+]
