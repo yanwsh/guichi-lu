@@ -66,6 +66,11 @@ const walk = new WalkScene();
 let promptLabel: string | null = null;
 let flow: FlowController;
 let sceneBg: THREE.Color | THREE.Texture | null = null;
+function setEndChrome(on: boolean) {
+  $('hud').style.visibility = on ? 'hidden' : '';
+  $('zoneLabel').style.visibility = on ? 'hidden' : '';
+  $('mapBtn').style.visibility = on ? 'hidden' : '';
+}
 function syncWalkChrome() {
   const on = walk.isActive() && mode !== 'title';
   const talking = !$('dialog').classList.contains('hidden') || mode === 'battle' || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden');
@@ -108,9 +113,10 @@ const hooks = {
   }),
   onChapterEnd: (n: MapNodeRow) => {
     $('endTitle').textContent = n.end_card_title ?? '第一章 · 未完'; $('endBody').textContent = n.end_card_body ?? '';
-    show('endContinue', !!n.hook_scene_id); show('endCard', true);
-    $('endClose').onclick = () => show('endCard', false);
-    $('endContinue').onclick = () => { show('endCard', false); if (n.hook_scene_id) void flow.goto(n.hook_scene_id); };
+    show('endContinue', !!n.hook_scene_id); show('next', false); show('endCard', true); setEndChrome(true); syncWalkChrome();
+    const dismiss = () => { show('endCard', false); setEndChrome(false); syncWalkChrome(); };
+    $('endClose').onclick = dismiss;
+    $('endContinue').onclick = () => { dismiss(); if (n.hook_scene_id) void flow.goto(n.hook_scene_id, `FLOW_${n.hook_scene_id}`, { hook: true }); };
   },
   onWalkMode: (on: boolean) => { if (on) { const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); },
   onToast: (t: string) => toast(t),

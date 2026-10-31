@@ -15,10 +15,12 @@ export interface GameState {
   visited_map_nodes?: string[];
   walk_pos?: WalkPos;
   triggered_ids?: string[];
+  /** 已播完的 dialogue_id。TR_N6_END_CARD 的 gate 读 DLG_CHOICE_01，不另开 flag。 */
+  dialogue_done?: string[];
   save_version: number;
 }
 export function newGame(flags: FlagRow[]): GameState {
-  return { flow_node_id: 'FLOW_START', scene_id: 'SC_01_OPEN', flags: Object.fromEntries(flags.map(f => [f.flag_id, f.default])), party_ids: ['CH_A'], visited_scene_ids: [], map_node: 'N1', visited_map_nodes: ['N1'], triggered_ids: [], save_version: SAVE_VERSION };
+  return { flow_node_id: 'FLOW_START', scene_id: 'SC_01_OPEN', flags: Object.fromEntries(flags.map(f => [f.flag_id, f.default])), party_ids: ['CH_A'], visited_scene_ids: [], map_node: 'N1', visited_map_nodes: ['N1'], triggered_ids: [], dialogue_done: [], save_version: SAVE_VERSION };
 }
 export function saveGame(s: GameState) { localStorage.setItem(KEY, JSON.stringify(s)); }
 export function loadGame(): GameState | null {

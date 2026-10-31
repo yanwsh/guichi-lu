@@ -33,8 +33,10 @@ export class FlowController {
   farthestOrder() { return Math.max(1, ...(this.state.visited_map_nodes ?? []).map(id => this.node(id)?.map_order ?? 0)); }
   private nodeForScene(sceneId: string) { return this.db.mapNodes.find(n => n.host_scene_id === sceneId && (n.map_phase === 'scene' || n.map_phase === 'pre_battle')); }
   start() { void this.goto(this.state.scene_id, this.state.flow_node_id); }
-  async goto(sceneId: string, flowNode = `FLOW_${sceneId}`) {
+  async goto(sceneId: string, flowNode = `FLOW_${sceneId}`, opts?: { hook?: boolean }) {
     const row = this.db.scenes.get(sceneId); if (!row) throw new Error(`unknown scene ${sceneId}`);
+    // SC_05 后置：故事流和结束卡「继续」都不播 Boss stub。
+    if (this.deferredBoss(sceneId)) { this.chapterEnd(); return; }
     this.state.scene_id = sceneId; this.state.flow_node_id = flowNode;
     const v = (this.state.visited_scene_ids ??= []); if (!v.includes(sceneId)) v.push(sceneId);
     const useWalk = sceneId === 'SC_03_TOWN' && !!this.walk?.ready;
@@ -57,8 +59,11 @@ export class FlowController {
     this.presenter.show(row);
     this.hooks.onSceneReady(row.name, false);
     if (this.hooks.onLocationCard) await this.hooks.onLocationCard(sceneId);
-    const enc = await this.playChain(row.enter_dialogue_id);
+    const teaId = sceneId === 'SC_04_CHOICE' ? this.db.sc04Triggers?.find(t => t.id === 'TR_N6_TEA')?.result?.dialogue_id : undefined;
+    const enc = await this.playChain(teaId || row.enter_dialogue_id);
     if (enc && !(sceneId === 'SC_03_TOWN' && this.state.flags['tutorial_won'])) { this.beginBattle(enc); return; }
+    // 章末宿主：抉择播完再按 TR_N6_END_CARD 收束，不接 Boss stub。hook 进入则停在场景里。
+    if (!opts?.hook && this.cliffNode(sceneId)) { this.finishChapterCliff(sceneId); return; }
     this.onDialogueEnd();
   }
   /** 播放对白链（next_dialogue_id / 抉择 followup_lines）；返回链尾 start_encounter_id */
@@ -67,18 +72,34 @@ export class FlowController {
     while (id) {
       const d = this.db.dialogues.get(id); if (!d) break;
       const choice = await this.dialog.run(d);
+      this.markDialogue(d.dialogue_id);
       if (choice) {
         this.state.flags[choice.set_flag] = choice.value; saveGame(this.state);
         const mapped = CHOICE_DIALOGUE[choice.choice_id];
-        if (mapped && this.db.dialogues.get(mapped)) await this.dialog.run(this.db.dialogues.get(mapped)!);
+        if (mapped && this.db.dialogues.get(mapped)) { await this.dialog.run(this.db.dialogues.get(mapped)!); this.markDialogue(mapped); }
         if (choice.choice_id === 'CHO_SAVE_LIFE') { this.state.flags['link_tongxin_unlocked'] = 1; saveGame(this.state); }
         if (choice.followup_lines?.length) await this.dialog.run({ dialogue_id: `${d.dialogue_id}_${choice.choice_id}`, lines: choice.followup_lines, choices: [] });
       }
       enc = d.start_encounter_id ?? enc; id = d.next_dialogue_id;
     }
+    saveGame(this.state);
     return enc;
   }
-  private onDialogueEnd() { const row = this.db.scenes.get(this.state.scene_id)!; this.hooks.onSceneReady(row.name, !!row.next_scene_id); }
+  private markDialogue(id: string) {
+    if (!id) return;
+    const done = (this.state.dialogue_done ??= []);
+    if (!done.includes(id)) done.push(id);
+  }
+  private markTrigger(id: string) {
+    const ids = (this.state.triggered_ids ??= []);
+    if (!ids.includes(id)) ids.push(id);
+  }
+  private onDialogueEnd() {
+    const row = this.db.scenes.get(this.state.scene_id)!;
+    const nextId = row.next_scene_id ?? '';
+    if (nextId && this.deferredBoss(nextId)) { this.chapterEnd(); return; }
+    this.hooks.onSceneReady(row.name, !!nextId);
+  }
   next() { const n = this.db.scenes.get(this.state.scene_id)?.next_scene_id; if (n) void this.goto(n); }
   interact(id: string) {
     const enc = this.db.scenes.get(this.state.scene_id)?.interact_encounters?.[id];
@@ -165,7 +186,9 @@ export class FlowController {
     if (!this.state.flags['qingge_joined_early']) { this.state.flags['qingge_joined_early'] = 1; saveGame(this.state); }
     if (n5 && this.hooks.onReward) await this.hooks.onReward(n5);
     this.setMapNode('N6');
-    this.onDialogueEnd();
+    // 解锁 N6 后不再把「下一场景」接到后置 Boss。下一跳是 SC_04 时仍进入抉择，抉择结束由 goto 收束到结束卡。
+    const nextId = this.db.scenes.get(this.state.scene_id)?.next_scene_id ?? '';
+    if (!nextId || this.deferredBoss(nextId)) this.chapterEnd(); else this.onDialogueEnd();
   }
   /** 地图 N4（未胜）：落到 host 场景再开战 */
   battleAt(sceneId: string, encounterId: string) {
@@ -176,6 +199,37 @@ export class FlowController {
     const row = this.db.scenes.get(sceneId)!; this.state.scene_id = sceneId; this.state.flow_node_id = `FLOW_${sceneId}`;
     this.presenter.show(row); this.hooks.onSceneReady(row.name, false); this.beginBattle(encounterId);
   }
-  /** 地图 N6：结束卡；「继续」→ hook_scene_id */
-  chapterEnd() { const n6 = this.node('N6'); if (!n6) return; this.setMapNode('N6'); this.hooks.onChapterEnd?.(n6); }
+  /**
+   * 苏禾 v0.1：TR_N6_TEA / TR_N6_END_CARD 同圆 (529, 628) r=90。
+   * 茶棚对白（DLG_MEET_B_01 → DLG_CHOICE_01）结束后才出结束卡。
+   * result.hook_scene 是 SC_05_BOSS，本章后置，不写进 hook_scene_id，关闭不进 Boss。
+   * 灰盒没有镇口可走网格；抉择结束即视为人在茶棚前，不铺迷宫。
+   */
+  private finishChapterCliff(sceneId: string) {
+    const triggers = this.db.sc04Triggers ?? [];
+    const tea = triggers.find(t => t.id === 'TR_N6_TEA');
+    const end = triggers.find(t => t.id === 'TR_N6_END_CARD');
+    const done = this.state.dialogue_done ?? [];
+    if (tea?.result?.dialogue_id && done.includes(tea.result.dialogue_id)) this.markTrigger(tea.id);
+    const need = end?.gate?.require_dialogue_done;
+    if (end && need && !done.includes(need)) { this.onDialogueEnd(); return; }
+    if (end) this.markTrigger(end.id);
+    saveGame(this.state);
+    this.chapterEnd(this.cliffNode(sceneId));
+  }
+  /** 章末宿主（N6 的 host 为 SC_04）。 */
+  private cliffNode(sceneId: string) { return this.db.mapNodes.find(n => n.host_scene_id === sceneId && n.map_phase === 'chapter_end'); }
+  /** 六站地图不占位的章末 Boss（SC_05 / DLG_BOSS_01）。 */
+  private deferredBoss(sceneId: string) {
+    const row = this.db.scenes.get(sceneId);
+    return !!row && (row.map_deferred === true || row.enter_dialogue_id === 'DLG_BOSS_01');
+  }
+  /** 地图 N6 / TR_N6_END_CARD：结束卡用 map_nodes 文案。后置 Boss 不当继续目标。 */
+  chapterEnd(node?: MapNodeRow) {
+    const n = node ?? this.node('N6'); if (!n || n.map_phase !== 'chapter_end') return;
+    this.dialog.hide(); this.setMapNode(n.map_node);
+    const hook = n.hook_scene_id;
+    const card = hook && !this.deferredBoss(hook) ? n : { ...n, hook_scene_id: undefined };
+    this.hooks.onChapterEnd?.(card);
+  }
 }
