@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { loadGameDb } from './data/loader';
-import { newGame, loadGame, clearSave, type GameState } from './save/gameState';
+import { loadGameDb, loadWalkMap, walkArtBase } from './data/loader';
+import { newGame, loadGame, clearSave, saveGame, type GameState } from './save/gameState';
 import { ScenePresenter } from './scene/scenePresenter';
 import { DialogRunner } from './dialog/dialogRunner';
 import { FlowController } from './flow/flowController';
 import { attackTurn } from './battle/battleLogic';
 import { nodeStates, enterNode, locationTitle } from './map/chapterMap';
+import { WalkScene } from './walk/walkScene';
 import type { GameDb, MapNodeRow } from './data/types';
 function toast(t: string) { const el = $('locCard'); el.textContent = t; el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 900); }
 let gdb: GameDb;
@@ -60,14 +61,35 @@ let mode: 'title' | 'explore' | 'battle' = 'title';
 const $ = (id: string) => document.getElementById(id)!;
 const show = (id: string, on: boolean) => $(id).classList.toggle('hidden', !on);
 const presenter = new ScenePresenter(scene, $('interacts'));
-const dialog = new DialogRunner($('dialog'));
+const dialog = new DialogRunner($('dialog'), $('talkPortrait') as HTMLImageElement, $('dialogDim'));
+const walk = new WalkScene();
+let promptLabel: string | null = null;
 let flow: FlowController;
 let sceneBg: THREE.Color | THREE.Texture | null = null;
+function syncWalkChrome() {
+  const on = walk.isActive() && mode !== 'title';
+  const talking = !$('dialog').classList.contains('hidden') || mode === 'battle' || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden');
+  show('joystick', on && !talking);
+  show('zoneLabel', on);
+  show('dbgBattle', !on && mode !== 'battle');
+  const btn = $('walkInteract');
+  if (on && !talking && promptLabel) { btn.textContent = promptLabel; btn.classList.remove('hidden'); }
+  else btn.classList.add('hidden');
+  if (!on || talking) resetStick();
+}
 function setBattleVisual(on: boolean) {
-  mode = on ? 'battle' : 'explore'; enemy.visible = on; eLight.visible = on;
-  renderer.domElement.style.filter = on ? 'brightness(.5) saturate(.7)' : ''; // 战斗：SC_03 压暗
-  if (!on && sceneBg) presenter.setBackground(sceneBg); else if (on) sceneBg = scene.background as THREE.Texture;
-  show('attack', on); show('retreat', on); show('battleLog', on); show('mapBtn', !on); show('interacts', !on); show('dbgBattle', !on); if (on) show('next', false);
+  mode = on ? 'battle' : 'explore';
+  const walking = walk.isActive();
+  if (walking) {
+    enemy.visible = false; eLight.visible = false; walk.setBattle(on);
+    renderer.domElement.style.filter = on ? 'brightness(.62) saturate(.8)' : '';
+  } else {
+    enemy.visible = on; eLight.visible = on;
+    renderer.domElement.style.filter = on ? 'brightness(.5) saturate(.7)' : '';
+    if (!on && sceneBg) presenter.setBackground(sceneBg); else if (on) sceneBg = scene.background as THREE.Texture;
+  }
+  show('attack', on); show('retreat', on); show('battleLog', on); show('mapBtn', !on); show('interacts', !on && !walking); show('dbgBattle', !on); if (on) show('next', false);
+  syncWalkChrome();
 }
 function battleHud() { const b = flow.state.battle!; $('hudText').textContent = `战斗 · 回合 ${b.turn} · 我方 ${b.party_hp} / 妖物 ${b.enemy_hp}`; }
 const hooks = {
@@ -90,15 +112,19 @@ const hooks = {
     $('endClose').onclick = () => show('endCard', false);
     $('endContinue').onclick = () => { show('endCard', false); if (n.hook_scene_id) void flow.goto(n.hook_scene_id); };
   },
+  onWalkMode: (on: boolean) => { if (on) { const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); },
+  onToast: (t: string) => toast(t),
 };
 function openMap() {
   if (mode !== 'explore' || !$('dialog').classList.contains('hidden')) return;
   const m = gdb.mapNodes, st = nodeStates(m, flow), root = $('mapNodes'); root.innerHTML = '';
   $('mapTitle').textContent = '第一章 · 云归山';
   const cur = m.find(n => st[n.map_node] === 'current'); $('mapObj').textContent = `当前目标：${cur?.objective ?? '—'}`;
+  const labels = walk.ready ? walk.labels() : {};
   for (const n of m) {
     const b = document.createElement('button'); b.className = `mnode ${st[n.map_node]}`;
-    b.innerHTML = `${n.map_node} · ${st[n.map_node] === 'locked' ? '？？？' : n.map_title}<small>${n.tags.join(' / ')}${st[n.map_node] === 'current' ? ' · 当前' : ''}</small>`;
+    const name = st[n.map_node] === 'locked' ? '？？？' : (labels[n.map_node] || n.map_title);
+    b.innerHTML = `${n.map_node} · ${name}<small>${n.tags.join(' / ')}${st[n.map_node] === 'current' ? ' · 当前' : ''}</small>`;
     b.disabled = st[n.map_node] === 'locked';
     b.onclick = () => { show('map', false); enterNode(n, flow, toast); };
     root.append(b);
@@ -113,23 +139,72 @@ $('attack').onclick = () => {
 };
 $('retreat').onclick = () => flow.endBattle('retreat');
 $('dbgBattle').onclick = () => flow.beginBattle('ENC_TUTORIAL_01');
-loadGameDb().then(db => {
+function layoutSafe() {
+  const ui = walk.safeUi(); const canvas = walk.canvasSize(); if (!ui || !canvas) return;
+  const place = (el: HTMLElement, box: { x: number; y: number; w: number; h: number }) => {
+    el.style.left = `${box.x / canvas.w * 100}%`; el.style.top = `${box.y / canvas.h * 100}%`;
+    el.style.width = `${box.w / canvas.w * 100}%`; el.style.height = `${box.h / canvas.h * 100}%`;
+  };
+  place($('joystick'), ui.joystick); place($('walkInteract'), ui.interact_btn);
+  const gap = `${(canvas.h - ui.dialog_bar_max_y) / canvas.h * 100}%`;
+  $('dialog').style.bottom = gap; $('talkPortrait').style.bottom = gap;
+}
+const joy = $('joystick'); const knob = $('joyKnob');
+function resetStick() { walk.setStick(0, 0, false); knob.style.left = '50%'; knob.style.top = '50%'; }
+function stickFrom(e: PointerEvent) {
+  const r = joy.getBoundingClientRect();
+  let dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+  let dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+  const mag = Math.hypot(dx, dy); if (mag > 1) { dx /= mag; dy /= mag; }
+  knob.style.left = `${50 + dx * 28}%`; knob.style.top = `${50 + dy * 28}%`;
+  walk.setStick(dx, dy, mag > 0.18);
+}
+joy.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); joy.setPointerCapture(e.pointerId); stickFrom(e); });
+joy.addEventListener('pointermove', e => { if (joy.hasPointerCapture(e.pointerId)) stickFrom(e); });
+joy.addEventListener('pointerup', () => resetStick());
+joy.addEventListener('pointercancel', () => resetStick());
+$('walkInteract').onclick = e => { e.stopPropagation(); walk.activatePrompt(); };
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (!walk.isActive() || mode !== 'explore') return;
+  walk.pointer(e.clientX, e.clientY, renderer.domElement.getBoundingClientRect());
+});
+loadGameDb().then(async db => {
   gdb = db;
+  try {
+    const wm = await loadWalkMap('SC_03_TOWN');
+    if (wm) { await walk.load(wm, walkArtBase('SC_03_TOWN')); layoutSafe(); }
+  } catch (err) { console.error(err); }
   const saved = loadGame(); show('continue', !!saved);
   const begin = (s: GameState) => {
     mode = 'explore'; show('title', false); show('hud', true); show('mapBtn', true);
     flow = new FlowController(db, s, dialog, presenter, hooks);
+    walk.setHooks({
+      flags: () => flow.state.flags,
+      triggered: () => flow.state.triggered_ids ?? [],
+      blocked: () => mode === 'battle' || !$('dialog').classList.contains('hidden') || !$('map').classList.contains('hidden') || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden'),
+      onTrigger: t => flow.handleWalkTrigger(t),
+      onToast: toast,
+      onZone: (label, objective) => { $('zoneName').textContent = label; $('zoneObj').textContent = objective; },
+      onPrompt: label => { promptLabel = label; syncWalkChrome(); },
+      savePos: (x, y) => { if (flow.state.battle) return; flow.state.walk_pos = { scene_id: 'SC_03_TOWN', x, y }; saveGame(flow.state); },
+    });
+    flow.attachWalk(walk.ready ? walk : null);
     if (s.battle) { flow.state.battle = undefined; }
     flow.start();
   };
   $('enter').onclick = () => { clearSave(); begin(newGame(db.flags)); };
   $('continue').onclick = () => begin(saved!);
+  $('enterTown').onclick = () => {
+    clearSave(); const s = newGame(db.flags); s.scene_id = 'SC_03_TOWN'; s.flow_node_id = 'FLOW_SC_03_TOWN'; begin(s);
+  };
 }).catch(e => { $('hudText').textContent = String(e); console.error(e); });
-function resize() { const r = app.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+function resize() { const r = app.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); walk.resize(r.width, r.height); }
 addEventListener('resize', resize); resize();
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
-  const t = clock.getElapsedTime();
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+  if (walk.isActive() && mode !== 'title') { walk.update(dt); syncWalkChrome(); renderer.render(walk.scene, walk.camera); return; }
   chars.forEach((c, i) => {
     c.visible = mode !== 'title';
     c.position.y = Math.sin(t * 2 + i) * .05;

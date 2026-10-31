@@ -1,4 +1,5 @@
 import type { GameDb, SceneRow, DialogueRow, EncounterRow, FlagRow, LinkRow, MapNodeRow } from './types';
+import type { WalkMap } from '../walk/walkTypes';
 const base = `${import.meta.env.BASE_URL}config/`;
 async function get<T>(name: string): Promise<T> {
   const r = await fetch(base + name + '.json');
@@ -13,3 +14,9 @@ export async function loadGameDb(): Promise<GameDb> {
 }
 /** bg_key "W0/scenes/SC_01_OPEN" -> public/W0/scenes/SC_01_OPEN_v0.png */
 export const resolveBg = (bgKey: string) => `${import.meta.env.BASE_URL}${bgKey}_v0.png`;
+export const walkArtBase = (sceneId: string) => `${import.meta.env.BASE_URL}assets/walkmaps/${sceneId}/`;
+export async function loadWalkMap(sceneId: string): Promise<WalkMap | null> {
+  const r = await fetch(`${base}walkmaps/${sceneId}.json`);
+  if (!r.ok) return null;
+  return r.json() as Promise<WalkMap>;
+}
