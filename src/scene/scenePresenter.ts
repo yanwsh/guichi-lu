@@ -23,4 +23,5 @@ export class ScenePresenter {
     }
   }
   setBackground(bg: THREE.Color | THREE.Texture) { this.scene.background = bg; }
+  clear() { this.interactRoot.innerHTML = ''; }
 }
