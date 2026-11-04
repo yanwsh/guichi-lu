@@ -1,0 +1,133 @@
+{
+  "host_scene_id": "C01_AFTER",
+  "status": "draft",
+  "version": "0.1",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": null,
+  "walkable_mask": null,
+  "notes": "火后街口；待白澈 C01 火后街口底板；对齐 第一章触发表骨架.md v0.1",
+  "refs": {
+    "scope_card": "docs/01-策划/灯渡/灰盒切片范围卡.md",
+    "trigger_md": "docs/01-策划/灯渡/第一章触发表骨架.md",
+    "canon": "docs/01-策划/灯渡/chapters/01_第一章_纸灯里有个人.md",
+    "prd": "docs/00-公司与立项/灯渡-灰盒验收PRD-v0.2.md"
+  },
+  "zones": [],
+  "triggers": [
+    {
+      "id": "TR_C01_06_ENTER",
+      "beat": "C01-06",
+      "type": "enter",
+      "shape": null,
+      "zone_hint": "火后街口",
+      "req": {
+        "flags_all": [
+          "c01_05_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01F_01",
+        "note": "祁燧救摊贩、查伤者"
+      }
+    },
+    {
+      "id": "TR_C01_06_WARRANT",
+      "beat": "C01-06",
+      "type": "talk",
+      "shape": null,
+      "zone_hint": "祁燧",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01F_02",
+        "set_flags": [
+          "c01_qisui_noticed_lamp"
+        ],
+        "note": "追索令；照宁问谁赔；祁燧认封存纹停顿"
+      }
+    },
+    {
+      "id": "TR_C01_06_CROWD",
+      "beat": "C01-06",
+      "type": "talk",
+      "shape": null,
+      "zone_hint": "素娘伤者名单/陶慎船工",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01F_03",
+        "set_flags": [
+          "c01_crowd_contest"
+        ],
+        "note": "多方争人手（素娘/陶慎/神兵）"
+      }
+    },
+    {
+      "id": "TR_C01_06_DEADLINE",
+      "beat": "C01-06",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "同上",
+      "req": {
+        "flags_all": [
+          "c01_crowd_contest",
+          "c01_qisui_noticed_lamp"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01F_04",
+        "set_flags": [
+          "c01_qisui_deadline"
+        ],
+        "note": "次日午前河署交验；两神兵留守"
+      }
+    },
+    {
+      "id": "TR_C01_06_PRESS_YAN",
+      "beat": "C01-06",
+      "type": "talk",
+      "shape": null,
+      "zone_hint": "街角（单独）",
+      "req": {
+        "flags_all": [
+          "c01_qisui_deadline"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01F_05",
+        "set_flags": [
+          "c01_yangui_pressed",
+          "c01_06_done"
+        ],
+        "goto_scene": "C01_SHOP",
+        "note": "逼问声音来源→渡口熟人；仍不提藏印；不揭父亲生死"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "C01_AFTER",
+      "to": "C01_SHOP",
+      "via": "TR_C01_06_PRESS_YAN",
+      "req": {
+        "flags_all": [
+          "c01_qisui_deadline"
+        ]
+      }
+    }
+  ],
+  "overlay_ref": "docs/03-美术/灯渡/characters/C01_许照宁.png"
+}

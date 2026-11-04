@@ -1,0 +1,169 @@
+{
+  "host_scene_id": "C01_FIRE",
+  "status": "draft",
+  "version": "0.1",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": null,
+  "walkable_mask": null,
+  "notes": "灯街起火高低层；待白澈 C01 灯街起火底板；对齐 第一章触发表骨架.md v0.1",
+  "refs": {
+    "scope_card": "docs/01-策划/灯渡/灰盒切片范围卡.md",
+    "trigger_md": "docs/01-策划/灯渡/第一章触发表骨架.md",
+    "canon": "docs/01-策划/灯渡/chapters/01_第一章_纸灯里有个人.md",
+    "prd": "docs/00-公司与立项/灯渡-灰盒验收PRD-v0.2.md"
+  },
+  "zones": [],
+  "triggers": [
+    {
+      "id": "MG_C01_05_TILE",
+      "beat": "C01-05",
+      "type": "minigame",
+      "shape": null,
+      "zone_hint": "铺檐松瓦",
+      "req": {
+        "flags_all": [
+          "c01_04_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_01",
+        "note": "分段行动#1：撑松瓦→转伞承追索，光折向空架起火"
+      }
+    },
+    {
+      "id": "BT_C01_05_ROUND1",
+      "beat": "C01-05",
+      "type": "battle",
+      "shape": null,
+      "zone_hint": "灯街高层",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_02",
+        "set_flags": [
+          "c01_fire_round1"
+        ],
+        "note": "战斗节拍桩#1：击退执灯甲，保下方通行间隙；严二台词按 c01_yan2_debt 分支（均来帮）"
+      }
+    },
+    {
+      "id": "MG_C01_05_CUTROPE",
+      "beat": "C01-05",
+      "type": "minigame",
+      "shape": null,
+      "zone_hint": "对面灯架受力绳",
+      "req": {
+        "flags_all": [
+          "c01_fire_round1"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_03",
+        "note": "拒打塌架、先割受力绳（架下有人）"
+      }
+    },
+    {
+      "id": "MG_C01_05_MAINROPE",
+      "beat": "C01-05",
+      "type": "minigame",
+      "shape": null,
+      "zone_hint": "主绳（小进悬空）",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_04",
+        "set_flags": [
+          "c01_xiaojin_saved"
+        ],
+        "note": "解灯来不及→切主绳；晏归棚布接人"
+      }
+    },
+    {
+      "id": "BT_C01_05_ELITE",
+      "beat": "C01-05",
+      "type": "battle",
+      "shape": null,
+      "zone_hint": "精英甲背面",
+      "req": {
+        "flags_all": [
+          "c01_xiaojin_saved",
+          "c01_anti_knot_learned"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_05",
+        "set_flags": [
+          "c01_elite_subdued"
+        ],
+        "note": "战斗节拍桩#2：绕背面反结锁追索轮→自失衡"
+      }
+    },
+    {
+      "id": "TR_C01_05_LOSS",
+      "beat": "C01-05",
+      "type": "interact",
+      "shape": null,
+      "zone_hint": "墙根传水/空灯架/黑门/泡水新绸",
+      "req": {
+        "flags_all": [
+          "c01_elite_subdued"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_06",
+        "set_flags": [
+          "c01_loss_seen"
+        ],
+        "note": "见损失不发奖：必须传水+检视≥3 处损失才可续；禁奖励弹窗"
+      }
+    },
+    {
+      "id": "TR_C01_05_EXIT",
+      "beat": "C01-05",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "晏归提回旧灯→灯戟落下",
+      "req": {
+        "flags_all": [
+          "c01_loss_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01E_07",
+        "set_flags": [
+          "c01_05_done"
+        ],
+        "goto_scene": "C01_AFTER",
+        "note": "照宁问「冲你来的吗」；祁燧进场"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "C01_FIRE",
+      "to": "C01_AFTER",
+      "via": "TR_C01_05_EXIT",
+      "req": {
+        "flags_all": [
+          "c01_loss_seen"
+        ]
+      }
+    }
+  ],
+  "overlay_ref": "docs/03-美术/灯渡/characters/C01_许照宁.png"
+}

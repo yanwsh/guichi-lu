@@ -1,0 +1,220 @@
+{
+  "host_scene_id": "C01_STREET",
+  "status": "draft",
+  "version": "0.1",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png",
+  "walkable_mask": null,
+  "notes": "镇街檐路日（白澈）；底板已挂灯→反结用空钩待挂态叠层，记轮磨；对齐 第一章触发表骨架.md v0.1",
+  "refs": {
+    "scope_card": "docs/01-策划/灯渡/灰盒切片范围卡.md",
+    "trigger_md": "docs/01-策划/灯渡/第一章触发表骨架.md",
+    "canon": "docs/01-策划/灯渡/chapters/01_第一章_纸灯里有个人.md",
+    "prd": "docs/00-公司与立项/灯渡-灰盒验收PRD-v0.2.md"
+  },
+  "zones": [],
+  "triggers": [
+    {
+      "id": "TR_C01_01_HE",
+      "beat": "C01-01",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 1300,
+        "w": 170,
+        "h": 160
+      },
+      "zone_hint": "左铺门前小案（药铺占位）",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_05",
+        "set_flags": [
+          "c01_paid_he"
+        ],
+        "note": "收款送灯原语 #1：交灯→收钱"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "TR_C01_01_YAN2",
+      "beat": "C01-01",
+      "type": "talk",
+      "shape": {
+        "kind": "box",
+        "x": 830,
+        "y": 890,
+        "w": 250,
+        "h": 330
+      },
+      "zone_hint": "右侧远屋檐下",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_06",
+        "note": "严二垫药欠薪，拿旧杉木抵账"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "CH_C01_01_YAN2_DEBT",
+      "beat": "C01-01",
+      "type": "choice",
+      "shape": {
+        "kind": "box",
+        "x": 830,
+        "y": 890,
+        "w": 250,
+        "h": 330
+      },
+      "zone_hint": "同严二",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_07",
+        "set_flags": [
+          "c01_yan2_debt"
+        ],
+        "note": "enum: wood（收杉木）/ installment（分期延期）/ iou（只留欠条）→ C01-05 严二救火台词差"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "TR_C01_01_TAO",
+      "beat": "C01-01",
+      "type": "cutaway",
+      "shape": {
+        "kind": "box",
+        "x": 650,
+        "y": 940,
+        "w": 180,
+        "h": 160
+      },
+      "zone_hint": "远处桥/船（cutaway 可无视 shape）",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_08",
+        "set_flags": [
+          "c01_tao_seen"
+        ],
+        "note": "陶慎核粮船出港；嫌灯架挡路「站远些」；可无 shape（路过自动）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "TR_C01_01_CHENG",
+      "beat": "C01-01",
+      "type": "talk",
+      "shape": {
+        "kind": "box",
+        "x": 420,
+        "y": 1310,
+        "w": 140,
+        "h": 150
+      },
+      "zone_hint": "檐下石阶",
+      "req": {
+        "flags_all": [
+          "c01_paid_he"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_09",
+        "note": "程婶嫌灯暗"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "MG_C01_01_ANTIKNOT",
+      "beat": "C01-01",
+      "type": "minigame",
+      "shape": {
+        "kind": "box",
+        "x": 250,
+        "y": 380,
+        "w": 240,
+        "h": 700
+      },
+      "zone_hint": "前景大灯+铁钩灯绳（画面已挂灯：灰盒用空钩/待挂态叠层，记下轮磨）",
+      "req": {
+        "flags_all": [
+          "c01_paid_he"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_10",
+        "set_flags": [
+          "c01_anti_knot_learned",
+          "c01_cheng_lamp_hung"
+        ],
+        "note": "挂灯反结原语：①原法拉紧→檐木裂响预警（失败可重试，不 game over）②卸重灯③反结分力穿另侧。建立 C01-05 救援路径"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    },
+    {
+      "id": "TR_C01_01_BACK",
+      "beat": "C01-01",
+      "type": "exit",
+      "shape": {
+        "kind": "box",
+        "x": 350,
+        "y": 1780,
+        "w": 420,
+        "h": 140
+      },
+      "zone_hint": "前景街面底缘",
+      "req": {
+        "flags_all": [
+          "c01_anti_knot_learned",
+          "c01_yan2_debt"
+        ]
+      },
+      "once": false,
+      "result": {
+        "goto_scene": "C01_SHOP",
+        "note": "回铺"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png"
+    }
+  ],
+  "paths": [
+    {
+      "from": "C01_STREET",
+      "to": "C01_SHOP",
+      "via": "TR_C01_01_BACK",
+      "req": {
+        "flags_all": [
+          "c01_anti_knot_learned",
+          "c01_yan2_debt"
+        ]
+      }
+    }
+  ],
+  "overlay_ref": "docs/03-美术/灯渡/characters/C01_许照宁.png"
+}

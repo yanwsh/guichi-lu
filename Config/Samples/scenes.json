@@ -172,7 +172,90 @@
     "bg_key": "TBD",
     "interactables": [],
     "enter_dialogue_id": "",
+    "next_scene_id": "C01_SHOP",
+    "note": "章题卡占位。触发表 enter 无对白。next 记 C01_SHOP。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "C01_SHOP",
+    "name": "C01 青蒲灯铺",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_C01_01_PRICE",
+      "TR_C01_01_PURSE",
+      "TR_C01_01_LAMPS",
+      "TR_C01_01_SCISSORS",
+      "TR_C01_02_KNOT_Q",
+      "MG_C01_02_SUNKLAMP",
+      "CH_C01_02_DEPOSIT",
+      "TR_C01_02_BEAM",
+      "TR_C01_02_TASSEL",
+      "TR_C01_03_BOWLS",
+      "TR_C01_03_BOWL_WEAR",
+      "MG_C01_03_STOOL",
+      "MG_C01_03_OLDLAMP",
+      "TR_C01_03_PRESS",
+      "MG_C01_04_BOX",
+      "CH_C01_04_XIAOJIN",
+      "TR_C01_07_BRIEF",
+      "CH_C01_07_LETTER",
+      "TR_C01_07_LIUPO",
+      "MG_C01_07_LOCK"
+    ],
+    "enter_dialogue_id": "DLG_C01A_01",
+    "next_scene_id": "C01_STREET",
+    "note": "青蒲灯铺（前堂/门廊/阁楼）。时相 day→yan→night→door→depart 只记在旗标，未接线。enter 记 C01-01 的 DLG_C01A_01；后段 enter 只在 walkmap。next 记 C01-01 去镇街；去 C01_FIRE / C01_END_STUB 在 walkmap。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "C01_STREET",
+    "name": "C01 镇街",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_C01_01_HE",
+      "TR_C01_01_YAN2",
+      "CH_C01_01_YAN2_DEBT",
+      "TR_C01_01_CHENG",
+      "MG_C01_01_ANTIKNOT"
+    ],
+    "enter_dialogue_id": "",
+    "next_scene_id": "C01_SHOP",
+    "note": "镇街：药铺/船工棚/河运行/程婶檐。触发表无 enter 对白。next 回 C01_SHOP。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "C01_FIRE",
+    "name": "C01 灯街起火",
+    "bg_key": "TBD",
+    "interactables": [
+      "MG_C01_05_TILE",
+      "BT_C01_05_ROUND1",
+      "MG_C01_05_CUTROPE",
+      "MG_C01_05_MAINROPE",
+      "BT_C01_05_ELITE",
+      "TR_C01_05_LOSS"
+    ],
+    "enter_dialogue_id": "",
+    "next_scene_id": "C01_AFTER",
+    "note": "铺檐 / 灯街高低层。触发表无 enter 对白。next 记 C01_AFTER。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "C01_AFTER",
+    "name": "C01 火后街口",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_C01_06_WARRANT",
+      "TR_C01_06_CROWD",
+      "TR_C01_06_PRESS_YAN"
+    ],
+    "enter_dialogue_id": "DLG_C01F_01",
+    "next_scene_id": "C01_SHOP",
+    "note": "火后街口。enter 记 DLG_C01F_01。next 回 C01_SHOP（深夜）。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "C01_END_STUB",
+    "name": "待续",
+    "bg_key": "TBD",
+    "interactables": [],
+    "enter_dialogue_id": "",
     "next_scene_id": "",
-    "note": "标题卡占位。next_scene_id 为空，下一步未排。空表骨架，未接主路径。"
+    "note": "章末黑场「待续」。无 enter 对白。next 为空。空表骨架，未接主路径。第二章不做。"
   }
 ]
