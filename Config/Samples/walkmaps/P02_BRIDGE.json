@@ -1,0 +1,123 @@
+{
+  "host_scene_id": "P02_BRIDGE",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/序章灰盒/P02_白石渡桥头晨.png",
+  "walkable_mask": null,
+  "version": "0.2",
+  "notes": "左下立柱=测水铜桩（铜桩立柱）；父亲/阿穗/程婶未入画，靠叠层。shape 对齐触发表 v0.2。result/req 仅为数据，runtime 不读。",
+  "safe_ui": null,
+  "occlusion_sort": [],
+  "zones": [
+    {
+      "id": "Z_PIER",
+      "shape": { "kind": "box", "x": 0, "y": 1350, "w": 780, "h": 570 }
+    },
+    {
+      "id": "Z_GAUGE_POST",
+      "shape": { "kind": "box", "x": 65, "y": 770, "w": 175, "h": 845 },
+      "note": "铜桩立柱"
+    },
+    {
+      "id": "Z_BRIDGE",
+      "shape": { "kind": "box", "x": 0, "y": 370, "w": 600, "h": 600 }
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_P02_ENTER",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 0, "y": 1500, "w": 700, "h": 420 },
+      "once": true,
+      "req": null,
+      "result": { "note": "街景演出" }
+    },
+    {
+      "id": "TR_P02_CHENG",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 390, "y": 715, "w": 550, "h": 365 },
+      "once": true,
+      "req": null,
+      "result": { "dialogue_id": "DLG_P02_01" }
+    },
+    {
+      "id": "TR_P02_SISTERS",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 540, "y": 1380, "w": 260, "h": 240 },
+      "once": true,
+      "req": null,
+      "result": { "dialogue_id": "DLG_P02_02" }
+    },
+    {
+      "id": "TR_P02_BOAT",
+      "type": "minigame",
+      "shape": { "kind": "box", "x": 600, "y": 1480, "w": 420, "h": 300 },
+      "once": true,
+      "req": { "triggers": ["TR_P02_SISTERS"] },
+      "result": {
+        "set_flags": ["p02_paper_boat_caught"],
+        "note": "成功即关并置 p02_paper_boat_caught；失败 p02_boat_retry_count+1。短操作未实现"
+      }
+    },
+    {
+      "id": "TR_P02_BOAT_OPEN",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 760, "y": 1520, "r": 130 },
+      "once": true,
+      "req": { "flags": ["p02_paper_boat_caught"] },
+      "result": { "dialogue_id": "DLG_P02_03" }
+    },
+    {
+      "id": "TR_P02_LEAF",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 760, "y": 1440, "r": 120 },
+      "once": true,
+      "req": { "triggers": ["TR_P02_BOAT_OPEN"] },
+      "result": {
+        "dialogue_id": "DLG_P02_04",
+        "set_flags": ["p02_yaoleaf_received"]
+      }
+    },
+    {
+      "id": "TR_P02_TREMOR",
+      "type": "cutaway",
+      "shape": { "kind": "box", "x": 0, "y": 370, "w": 600, "h": 320 },
+      "once": true,
+      "req": { "flags": ["p02_yaoleaf_received"] },
+      "result": { "note": "cutaway 桥震（桥顶宽 box 仅作镜头焦点）。切镜未实现" }
+    },
+    {
+      "id": "TR_P02_FATHER",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 40, "y": 780, "w": 260, "h": 860 },
+      "once": true,
+      "req": { "triggers": ["TR_P02_TREMOR"] },
+      "result": {
+        "dialogue_id": "DLG_P02_05",
+        "set_flags": ["p02_wedges_handed"]
+      },
+      "note": "铜桩立柱。父亲未入画，热点叠在测水铜桩上"
+    },
+    {
+      "id": "TR_P02_EXIT",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 0, "y": 1820, "w": 760, "h": 100 },
+      "once": true,
+      "req": { "flags": ["p02_wedges_handed"] },
+      "result": { "to_scene_id": "P03_BOAT" }
+    }
+  ],
+  "paths": [
+    {
+      "from": "P02_BRIDGE",
+      "trigger": "TR_P02_EXIT",
+      "to": "P03_BOAT",
+      "note": "跟拍回头→淡"
+    }
+  ]
+}

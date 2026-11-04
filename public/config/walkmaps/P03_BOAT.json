@@ -1,0 +1,104 @@
+{
+  "host_scene_id": "P03_BOAT",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/序章灰盒/P03_去青蒲客船.png",
+  "walkable_mask": null,
+  "version": "0.2",
+  "notes": "纸包未入画，PARCEL/SUGAR 为前景甲板叠层道具位；父登船位取左后船头平台。cutaway 的 shape 为 null。result/req 仅为数据，runtime 不读。",
+  "safe_ui": null,
+  "occlusion_sort": [],
+  "zones": [
+    {
+      "id": "Z_LAMP_BASKETS",
+      "shape": { "kind": "box", "x": 140, "y": 1205, "w": 750, "h": 680 }
+    },
+    {
+      "id": "Z_DECK",
+      "shape": { "kind": "box", "x": 0, "y": 940, "w": 560, "h": 980 }
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_P03_ENTER",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 0, "y": 940, "w": 470, "h": 260 },
+      "once": true,
+      "req": null,
+      "result": { "dialogue_id": "DLG_P03_01" }
+    },
+    {
+      "id": "TR_P03_FATHER_ARRIVE",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 0, "y": 790, "w": 260, "h": 150 },
+      "once": true,
+      "req": null,
+      "result": {
+        "dialogue_id": "DLG_P03_02",
+        "set_flags": ["p03_parcel_given_to_mother"]
+      },
+      "note": "父。登船位取左后船头平台，人物未入画靠叠层"
+    },
+    {
+      "id": "TR_P03_NO_WAVE",
+      "type": "cutaway",
+      "shape": null,
+      "once": true,
+      "req": { "triggers": ["TR_P03_FATHER_ARRIVE"] },
+      "result": {
+        "set_flags": ["p03_no_wave"],
+        "note": "cutaway。shape null 为预期。切镜未实现"
+      }
+    },
+    {
+      "id": "TR_P03_PARCEL",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 110, "y": 1700, "r": 110 },
+      "once": true,
+      "req": { "triggers": ["TR_P03_NO_WAVE"] },
+      "result": { "set_flags": ["p03_parcel_inspected", "p03_parcel_items"] },
+      "note": "纸包。未入画，前景甲板叠层道具位"
+    },
+    {
+      "id": "TR_P03_SUGAR",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 110, "y": 1650, "r": 120 },
+      "once": true,
+      "req": { "set_complete": "p03_parcel_items" },
+      "result": { "set_flags": ["p03_sugar_kept_uneaten"] },
+      "note": "纸包。与 PARCEL 同叠层位，按物品检视完再包紧"
+    },
+    {
+      "id": "TR_P03_LOOKBACK",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 280, "y": 400, "w": 220, "h": 700 },
+      "once": true,
+      "req": { "triggers": ["TR_P03_SUGAR"] },
+      "result": { "note": "篷边回望" }
+    },
+    {
+      "id": "TR_P03_EXIT",
+      "type": "cutaway",
+      "shape": null,
+      "once": true,
+      "req": { "triggers": ["TR_P03_LOOKBACK"] },
+      "result": {
+        "to_scene_id": "P04_FLOOD",
+        "note": "cutaway。shape null 为预期。切镜未实现"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "P03_BOAT",
+      "trigger": "TR_P03_EXIT",
+      "to": "P04_FLOOD",
+      "note": "雨密"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "host_scene_id": "P05_SHELTER",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/序章灰盒/P05_石楼临时棚.png",
+  "walkable_mask": null,
+  "version": "0.2",
+  "notes": "清点者/母未入画靠叠层。COUNT 与 TRACE 同桌盒重叠，按 req 分时：COUNT 在先，TRACE 待 p05_name_dent_found。result/req/gate 仅为数据，runtime 不读。失名未实现。",
+  "safe_ui": null,
+  "occlusion_sort": [],
+  "zones": [
+    {
+      "id": "Z_DOOR_LIGHT",
+      "shape": { "kind": "box", "x": 95, "y": 350, "w": 185, "h": 820 }
+    },
+    {
+      "id": "Z_MATS",
+      "shape": { "kind": "box", "x": 0, "y": 1250, "w": 500, "h": 480 }
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_P05_ENTER",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 40, "y": 1620, "w": 420, "h": 260 },
+      "once": true,
+      "req": null,
+      "result": { "note": "门边空位+纸包" }
+    },
+    {
+      "id": "TR_P05_COUNT",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 435, "y": 1185, "w": 595, "h": 250 },
+      "once": true,
+      "req": null,
+      "gate": {
+        "time_slice": 1,
+        "note": "与 TRACE 同桌分时；本片在先。无 runtime。"
+      },
+      "result": { "dialogue_id": "DLG_P05_01" },
+      "note": "COUNT/TRACE 同桌分时。清点者未入画靠叠层"
+    },
+    {
+      "id": "TR_P05_PARCEL",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 354, "y": 1508, "r": 115 },
+      "once": true,
+      "req": { "triggers": ["TR_P05_COUNT"] },
+      "result": { "set_flags": ["p05_name_dent_found"] }
+    },
+    {
+      "id": "TR_P05_TRACE",
+      "type": "minigame",
+      "shape": { "kind": "box", "x": 525, "y": 1205, "w": 505, "h": 225 },
+      "once": false,
+      "req": { "flags": ["p05_name_dent_found"] },
+      "gate": {
+        "time_slice": 2,
+        "after_trigger": "TR_P05_COUNT",
+        "note": "与 COUNT 同桌分时；名单纸内，待凹痕已见。无 runtime。"
+      },
+      "result": {
+        "set_flags": ["p05_name_trace_failed"],
+        "note": "每次 +1，≥1 可推进，不可成功。失名未实现"
+      },
+      "note": "COUNT/TRACE 同桌分时"
+    },
+    {
+      "id": "TR_P05_MOTHER",
+      "type": "talk",
+      "shape": { "kind": "box", "x": 0, "y": 1250, "w": 470, "h": 250 },
+      "once": true,
+      "req": { "flags_min": [{ "flag_id": "p05_name_trace_failed", "min": 1 }] },
+      "result": {
+        "dialogue_id": "DLG_P05_02",
+        "set_flags": ["p05_hand_bandaged"]
+      }
+    },
+    {
+      "id": "TR_P05_BOX_STOW",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 620, "y": 1475, "w": 460, "h": 445 },
+      "once": true,
+      "req": { "triggers": ["TR_P05_MOTHER"] },
+      "result": {
+        "set_flags": ["p05_box_stowed", "father_name_lost", "ch1_unlocked"],
+        "to_scene_id": "CH1_GATE",
+        "note": "无「任务完成」。收匣未实现"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "P05_SHELTER",
+      "trigger": "TR_P05_BOX_STOW",
+      "to": "CH1_GATE",
+      "note": "黑场+标题卡「第一章 · 纸灯里有个人」（占位）"
+    }
+  ]
+}
