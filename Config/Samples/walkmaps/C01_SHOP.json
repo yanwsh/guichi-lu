@@ -1,0 +1,834 @@
+{
+  "host_scene_id": "C01_SHOP",
+  "status": "draft",
+  "version": "0.1",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png",
+  "walkable_mask": null,
+  "notes": "灯铺：01/02/03/04(门廊区)/07 同店不同时相；主底板=前堂日，晚饭/阁楼触发带 art_ref 覆盖；04/07 shape 待白澈（夜/门廊）；对齐 第一章触发表骨架.md v0.1",
+  "refs": {
+    "scope_card": "docs/01-策划/灯渡/灰盒切片范围卡.md",
+    "trigger_md": "docs/01-策划/灯渡/第一章触发表骨架.md",
+    "canon": "docs/01-策划/灯渡/chapters/01_第一章_纸灯里有个人.md",
+    "prd": "docs/00-公司与立项/灯渡-灰盒验收PRD-v0.2.md"
+  },
+  "zones": [],
+  "triggers": [
+    {
+      "id": "TR_C01_01_ENTER",
+      "beat": "C01-01",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 140,
+        "y": 260,
+        "w": 330,
+        "h": 680
+      },
+      "zone_hint": "左侧楼梯",
+      "req": {
+        "flags_all": [
+          "c01_started"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_01",
+        "set_flags": [
+          "c01_phase_day"
+        ],
+        "note": "被催下楼，门口三人排队（何掌柜/程婶/严二）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_PRICE",
+      "beat": "C01-01",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 640,
+        "y": 320,
+        "w": 150,
+        "h": 80
+      },
+      "zone_hint": "门楣「青蒲灯铺」牌",
+      "req": {
+        "flags_all": [
+          "c01_phase_day"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_02",
+        "note": "认价牌再认人；咬饼查灯骨"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_PURSE",
+      "beat": "C01-01",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 290,
+        "y": 960,
+        "w": 200,
+        "h": 140
+      },
+      "zone_hint": "台面碗位旁（修屋匣占位）",
+      "req": {
+        "flags_all": [
+          "c01_phase_day"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_03",
+        "set_flags": [
+          "c01_purse_merged"
+        ],
+        "note": "把剪刀钱并进修屋匣→素娘当众拿回「把剪刀也替我拿着」"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_LAMPS",
+      "beat": "C01-01",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 780,
+        "y": 130,
+        "w": 300,
+        "h": 460
+      },
+      "zone_hint": "右上吊灯三盏",
+      "req": {
+        "flags_all": [
+          "c01_purse_merged"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_04",
+        "set_flags": [
+          "c01_lamps_picked"
+        ],
+        "note": "取送灯背架（短操作：装架）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_EXIT",
+      "beat": "C01-01",
+      "type": "exit",
+      "shape": {
+        "kind": "box",
+        "x": 680,
+        "y": 440,
+        "w": 300,
+        "h": 600
+      },
+      "zone_hint": "右侧敞门→河街",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      },
+      "once": false,
+      "result": {
+        "goto_scene": "C01_STREET",
+        "note": "→镇街"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_SCISSORS",
+      "beat": "C01-01",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 1040,
+        "w": 560,
+        "h": 180
+      },
+      "zone_hint": "长案前沿（裁案）",
+      "req": {
+        "flags_all": [
+          "c01_cheng_lamp_hung"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01A_11",
+        "set_flags": [
+          "c01_scissors_scene",
+          "c01_purse_returned"
+        ],
+        "note": "伸手要磨卷刃剪刀，母亲不交；放回钱包；软铁提醒。争执未结→c01_01_done"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_01_DONE",
+      "beat": "C01-01",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "—",
+      "req": {
+        "flags_all": [
+          "c01_scissors_scene"
+        ]
+      },
+      "once": true,
+      "result": {
+        "set_flags": [
+          "c01_01_done",
+          "c01_phase_yan"
+        ],
+        "note": "时相切：赶灯节午后"
+      }
+    },
+    {
+      "id": "TR_C01_02_YANGUI_IN",
+      "beat": "C01-02",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 680,
+        "y": 440,
+        "w": 300,
+        "h": 600
+      },
+      "zone_hint": "敞门",
+      "req": {
+        "flags_all": [
+          "c01_01_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_01",
+        "set_flags": [
+          "c01_yangui_met"
+        ],
+        "note": "翻最便宜一盏看底"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_02_KNOT_Q",
+      "beat": "C01-02",
+      "type": "talk",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 920,
+        "w": 580,
+        "h": 300
+      },
+      "zone_hint": "长案",
+      "req": {
+        "flags_all": [
+          "c01_yangui_met"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_02",
+        "set_flags": [
+          "c01_lineage_pause"
+        ],
+        "note": "「谁教你这接法」→答「做久就会」停顿（失名钩前置，无选项）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "MG_C01_02_SUNKLAMP",
+      "beat": "C01-02",
+      "type": "minigame",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 920,
+        "w": 580,
+        "h": 300
+      },
+      "zone_hint": "长案（工作台）",
+      "req": {
+        "flags_all": [
+          "c01_yangui_met"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_03",
+        "set_flags": [
+          "c01_sunk_lamp_fixed"
+        ],
+        "note": "拆灯骨原语：拆外层→找受扭力那根骨→卸力。追问来处→商路名（避开真地点）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "CH_C01_02_DEPOSIT",
+      "beat": "C01-02",
+      "type": "talk",
+      "shape": {
+        "kind": "box",
+        "x": 60,
+        "y": 920,
+        "w": 580,
+        "h": 300
+      },
+      "zone_hint": "长案",
+      "req": {
+        "flags_all": [
+          "c01_sunk_lamp_fixed"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_04",
+        "set_flags": [
+          "c01_yangui_deposit",
+          "c01_no_contraband_stated"
+        ],
+        "note": "收订金+声明「违禁不藏」（必过，非选项）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_02_BEAM",
+      "beat": "C01-02",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 1080,
+        "h": 280
+      },
+      "zone_hint": "顶梁",
+      "req": {
+        "flags_all": [
+          "c01_yangui_deposit"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_05",
+        "set_flags": [
+          "c01_yangui_wary"
+        ],
+        "note": "玩家看他记前后门/楼梯/临河窗；照宁戒备"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "TR_C01_02_TASSEL",
+      "beat": "C01-02",
+      "type": "interact",
+      "shape": {
+        "kind": "circle",
+        "x": 503,
+        "y": 668,
+        "r": 60
+      },
+      "zone_hint": "楼梯旁吊挂灯穗",
+      "req": {
+        "flags_all": [
+          "c01_yangui_wary"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_06",
+        "set_flags": [
+          "c01_tassel_reacted"
+        ],
+        "note": "灯穗与沉水灯微反应；他不追问，约日落取货"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png"
+    },
+    {
+      "id": "CUT_C01_02_FAKESEAL",
+      "beat": "C01-02",
+      "type": "cutaway",
+      "shape": null,
+      "zone_hint": "—（切镜：窄巷→河署维护渠→封印室）",
+      "req": {
+        "flags_all": [
+          "c01_tassel_reacted"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01B_07",
+        "set_flags": [
+          "c01_cut_fake_seal_seen",
+          "c01_02_done",
+          "c01_phase_night"
+        ],
+        "note": "切镜原语：药单（小荼症状）+守卫轮班+假印入掌。照宁不在场，玩家知"
+      }
+    },
+    {
+      "id": "TR_C01_03_ENTER",
+      "beat": "C01-03",
+      "type": "enter",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 1106,
+        "w": 1031,
+        "h": 338
+      },
+      "zone_hint": "饭桌",
+      "req": {
+        "flags_all": [
+          "c01_02_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_01",
+        "note": "窗口再看白天灯绳"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png"
+    },
+    {
+      "id": "TR_C01_03_BOWLS",
+      "beat": "C01-03",
+      "type": "interact",
+      "shape": {
+        "kind": "circle",
+        "x": 473,
+        "y": 1178,
+        "r": 75
+      },
+      "zone_hint": "后排中碗＝第三碗/空碗位（底板现 4 碗，按正文三碗语义：左前碗不布点，待轮磨减碗）",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_02",
+        "set_flags": [
+          "c01_empty_bowl_seen"
+        ],
+        "note": "失名钩：母女替空碗找理由（柳婆/忘收/推酱菜）。**禁**「忘记××」按钮；仅可检视"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png"
+    },
+    {
+      "id": "TR_C01_03_BOWL_WEAR",
+      "beat": "C01-03",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 800,
+        "y": 960,
+        "w": 280,
+        "h": 300
+      },
+      "zone_hint": "右侧油灯台（画面无灶，暂代灶边）",
+      "req": {
+        "flags_all": [
+          "c01_empty_bowl_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_03",
+        "set_flags": [
+          "c01_bowl_wear_seen"
+        ],
+        "note": "磨痕同常多拿那只；玩笑后无人动筷"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png"
+    },
+    {
+      "id": "TR_C01_03_ATTIC_SOUND",
+      "beat": "C01-03",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "阁楼金属轻响",
+      "req": {
+        "flags_all": [
+          "c01_bowl_wear_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_04",
+        "note": "上楼；楼下收桌声持续"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png"
+    },
+    {
+      "id": "MG_C01_03_STOOL",
+      "beat": "C01-03",
+      "type": "minigame",
+      "shape": {
+        "kind": "box",
+        "x": 290,
+        "y": 1195,
+        "w": 215,
+        "h": 235
+      },
+      "zone_hint": "中左木踏凳",
+      "req": {
+        "flags_all": [
+          "c01_bowl_wear_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "set_flags": [
+          "c01_stool_set"
+        ],
+        "note": "垫踏凳原语：垫稳→取防潮布"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png"
+    },
+    {
+      "id": "MG_C01_03_OLDLAMP",
+      "beat": "C01-03",
+      "type": "minigame",
+      "shape": {
+        "kind": "circle",
+        "x": 246,
+        "y": 983,
+        "r": 80
+      },
+      "zone_hint": "左中亮着的旧灯",
+      "req": {
+        "flags_all": [
+          "c01_stool_set",
+          "c01_anti_knot_learned"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_05",
+        "set_flags": [
+          "c01_old_lamp_knotted"
+        ],
+        "note": "拆破骨+细反结；火内缩一点"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png"
+    },
+    {
+      "id": "TR_C01_03_VOICE",
+      "beat": "C01-03",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "同上",
+      "req": {
+        "flags_all": [
+          "c01_old_lamp_knotted"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_06",
+        "set_flags": [
+          "c01_old_lamp_voice_heard"
+        ],
+        "note": "「别咬线。」吐线头、碰翻小刀；再系再拆不重复（只触发一次）"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png"
+    },
+    {
+      "id": "TR_C01_03_PRESS",
+      "beat": "C01-03",
+      "type": "interact",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 1150,
+        "w": 500,
+        "h": 300
+      },
+      "zone_hint": "饭桌左侧（素娘位）",
+      "req": {
+        "flags_all": [
+          "c01_old_lamp_voice_heard"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01C_07",
+        "set_flags": [
+          "c01_mother_same_press",
+          "c01_03_done"
+        ],
+        "note": "母女同压一受力点；章内首个失名情感峰"
+      },
+      "art_ref": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png"
+    },
+    {
+      "id": "TR_C01_04_BREAKIN",
+      "beat": "C01-04",
+      "type": "enter",
+      "shape": null,
+      "zone_hint": "门廊区（晏归撞门）",
+      "req": {
+        "flags_all": [
+          "c01_03_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01D_01",
+        "set_flags": [
+          "c01_phase_door"
+        ],
+        "note": "追索光沿水沟爬（门廊区=原窄巷）"
+      }
+    },
+    {
+      "id": "MG_C01_04_BOX",
+      "beat": "C01-04",
+      "type": "minigame",
+      "shape": null,
+      "zone_hint": "正门箱",
+      "req": {
+        "flags_all": [
+          "c01_phase_door"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01D_02",
+        "set_flags": [
+          "c01_trace_light_seen"
+        ],
+        "note": "挪箱离正门（防被标）；追问「标」"
+      }
+    },
+    {
+      "id": "CUT_C01_04_HIDESEAL",
+      "beat": "C01-04",
+      "type": "cutaway",
+      "shape": null,
+      "zone_hint": "合门时（箱角半遮）",
+      "req": {
+        "flags_all": [
+          "c01_trace_light_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "set_flags": [
+          "c01_seal_hidden_seen"
+        ],
+        "note": "藏印：玩家可见半遮；照宁仅觉灯变重（不置照宁知情旗标）"
+      }
+    },
+    {
+      "id": "TR_C01_04_ARMOR",
+      "beat": "C01-04",
+      "type": "auto",
+      "shape": null,
+      "zone_hint": "门外执灯甲",
+      "req": {
+        "flags_all": [
+          "c01_seal_hidden_seen"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01D_03",
+        "set_flags": [
+          "c01_armor_at_door"
+        ],
+        "note": "通告追印→光对旧灯；照宁挡手"
+      }
+    },
+    {
+      "id": "CH_C01_04_XIAOJIN",
+      "beat": "C01-04",
+      "type": "interact",
+      "shape": null,
+      "zone_hint": "灯架下（小进跑过）",
+      "req": {
+        "flags_all": [
+          "c01_armor_at_door"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01D_04",
+        "set_flags": [
+          "c01_bound_task"
+        ],
+        "note": "旧灯入背架、撑伞骨抵光、喊晏归上屋顶断绳"
+      }
+    },
+    {
+      "id": "TR_C01_04_EXIT",
+      "beat": "C01-04",
+      "type": "exit",
+      "shape": null,
+      "zone_hint": "侧梯",
+      "req": {
+        "flags_all": [
+          "c01_bound_task"
+        ]
+      },
+      "once": false,
+      "result": {
+        "set_flags": [
+          "c01_04_done"
+        ],
+        "goto_scene": "C01_FIRE",
+        "note": "→铺檐"
+      }
+    },
+    {
+      "id": "TR_C01_07_LEDGER",
+      "beat": "C01-07",
+      "type": "enter",
+      "shape": null,
+      "zone_hint": "前堂（深夜清点）",
+      "req": {
+        "flags_all": [
+          "c01_06_done"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01G_01",
+        "set_flags": [
+          "c01_phase_depart"
+        ],
+        "note": "算盘被母亲拿走"
+      }
+    },
+    {
+      "id": "TR_C01_07_BRIEF",
+      "beat": "C01-07",
+      "type": "talk",
+      "shape": null,
+      "zone_hint": "饭桌（出行说明）",
+      "req": {
+        "flags_all": [
+          "c01_phase_depart"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01G_02",
+        "set_flags": [
+          "c01_departure_briefed"
+        ],
+        "note": "去哪/跟谁/怎么回信 三项逐条说清（可做清单 UI）"
+      }
+    },
+    {
+      "id": "CH_C01_07_LETTER",
+      "beat": "C01-07",
+      "type": "choice",
+      "shape": null,
+      "zone_hint": "同上（信）",
+      "req": {
+        "flags_all": [
+          "c01_departure_briefed"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01G_03",
+        "set_flags": [
+          "c01_departure_letter_danger"
+        ],
+        "note": "enum: explicit / vague。仅影响后续母亲信任/追问语气，**不**作死亡开关；包脚踝药"
+      }
+    },
+    {
+      "id": "TR_C01_07_LIUPO",
+      "beat": "C01-07",
+      "type": "talk",
+      "shape": null,
+      "zone_hint": "柳婆",
+      "req": {
+        "flags_all": [
+          "c01_departure_briefed"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01G_04",
+        "set_flags": [
+          "c01_liupo_wick_match"
+        ],
+        "note": "九年前托灯人想不起；灯芯压痕相合+废渡口渡税纹"
+      }
+    },
+    {
+      "id": "MG_C01_07_LOCK",
+      "beat": "C01-07",
+      "type": "minigame",
+      "shape": null,
+      "zone_hint": "铺门",
+      "req": {
+        "flags_all": [
+          "c01_liupo_wick_match"
+        ]
+      },
+      "once": true,
+      "result": {
+        "dialogue_id": "DLG_C01G_05",
+        "set_flags": [
+          "c01_door_locked_gap",
+          "c01_done"
+        ],
+        "goto_scene": "C01_END_STUB",
+        "note": "锁门原语：垫木片→转钥匙两次→留黑缝；拒晏归帮。章末出门→占位结束"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "C01_SHOP",
+      "to": "C01_STREET",
+      "via": "TR_C01_01_EXIT",
+      "req": {
+        "flags_all": [
+          "c01_lamps_picked"
+        ]
+      }
+    },
+    {
+      "from": "C01_SHOP",
+      "to": "C01_FIRE",
+      "via": "TR_C01_04_EXIT",
+      "req": {
+        "flags_all": [
+          "c01_bound_task"
+        ]
+      }
+    },
+    {
+      "from": "C01_SHOP",
+      "to": "C01_END_STUB",
+      "via": "MG_C01_07_LOCK",
+      "req": {
+        "flags_all": [
+          "c01_door_locked_gap"
+        ]
+      }
+    }
+  ],
+  "overlay_ref": "docs/03-美术/灯渡/characters/C01_许照宁.png"
+}

@@ -1,0 +1,55 @@
+{
+  "host_scene_id": "CH1_GATE",
+  "status": "draft",
+  "version": "0.1",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": null,
+  "walkable_mask": null,
+  "notes": "章入口占位（无底板，章题卡）；对齐 第一章触发表骨架.md v0.1",
+  "refs": {
+    "scope_card": "docs/01-策划/灯渡/灰盒切片范围卡.md",
+    "trigger_md": "docs/01-策划/灯渡/第一章触发表骨架.md",
+    "canon": "docs/01-策划/灯渡/chapters/01_第一章_纸灯里有个人.md",
+    "prd": "docs/00-公司与立项/灯渡-灰盒验收PRD-v0.2.md"
+  },
+  "zones": [],
+  "triggers": [
+    {
+      "id": "TR_CH1_GATE_START",
+      "beat": null,
+      "type": "enter",
+      "shape": null,
+      "zone_hint": "章题卡「第一章·纸灯里有个人」",
+      "req": {
+        "flags_all": []
+      },
+      "once": true,
+      "result": {
+        "set_flags": [
+          "c01_started"
+        ],
+        "goto_scene": "C01_SHOP",
+        "note": "新开局/读档落点；章题卡后进 C01-01"
+      }
+    }
+  ],
+  "paths": [
+    {
+      "from": "CH1_GATE",
+      "to": "C01_SHOP",
+      "via": "TR_CH1_GATE_START",
+      "req": {
+        "flags_all": [
+          "c01_started"
+        ]
+      }
+    }
+  ],
+  "overlay_ref": "docs/03-美术/灯渡/characters/C01_许照宁.png"
+}
