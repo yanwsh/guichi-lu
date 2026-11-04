@@ -309,5 +309,100 @@
       }
     ],
     "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_01",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_02",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_03",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_04",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_05",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P01_06",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P02_01",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P02_02",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P02_03",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P02_04",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P02_05",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P03_01",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P03_02",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P04_01",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P04_02",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P04_03",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P04_04",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P05_01",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
+  },
+  {
+    "dialogue_id": "DLG_P05_02",
+    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "choices": []
   }
 ]

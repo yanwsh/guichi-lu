@@ -1,0 +1,134 @@
+{
+  "host_scene_id": "P01_HOME",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/序章灰盒/P01_许家前堂晨.png",
+  "walkable_mask": null,
+  "version": "0.2",
+  "notes": "门未入画：EXIT 用右侧深处立柱暗部窄带（右暗带）。shape 对齐触发表 v0.2。result/req 仅为数据，runtime 不读。",
+  "safe_ui": null,
+  "occlusion_sort": [],
+  "zones": [
+    {
+      "id": "Z_TABLE",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 1140,
+        "w": 1020,
+        "h": 360
+      }
+    },
+    {
+      "id": "Z_WINDOW",
+      "shape": {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 450,
+        "h": 1100
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_P01_ENTER",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 190, "y": 1620, "w": 300, "h": 260 },
+      "once": true,
+      "req": null,
+      "result": { "dialogue_id": "DLG_P01_01" }
+    },
+    {
+      "id": "TR_P01_REED",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 215, "y": 1270, "w": 440, "h": 160 },
+      "once": true,
+      "req": null,
+      "result": { "dialogue_id": "DLG_P01_02" }
+    },
+    {
+      "id": "TR_P01_WOOD",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 20, "y": 1480, "w": 160, "h": 340 },
+      "once": true,
+      "req": null,
+      "result": {
+        "dialogue_id": "DLG_P01_03",
+        "set_flags": ["p01_ledger_seen", "p01_lamp_shim_placed"]
+      }
+    },
+    {
+      "id": "TR_P01_PAPER",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 572, "y": 1265, "r": 110 },
+      "once": false,
+      "req": null,
+      "result": { "note": "裁纸；父按进度短回应" }
+    },
+    {
+      "id": "TR_P01_KNOT",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 235, "y": 1225, "r": 150 },
+      "once": false,
+      "req": { "flags": ["p01_lamp_shim_placed"] },
+      "result": {
+        "dialogue_id": "DLG_P01_04",
+        "set_flags": ["p01_knife_received"]
+      }
+    },
+    {
+      "id": "TR_P01_KNOT_FIX",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 250, "y": 1215, "r": 160 },
+      "once": true,
+      "req": { "flags": ["p01_knife_received"] },
+      "result": {
+        "dialogue_id": "DLG_P01_05",
+        "set_flags": ["p01_fish_lamp_fixed"]
+      }
+    },
+    {
+      "id": "TR_P01_WINDOW",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 0, "y": 990, "w": 450, "h": 120 },
+      "once": true,
+      "req": { "flags": ["p01_fish_lamp_fixed"] },
+      "result": {
+        "dialogue_id": "DLG_P01_06",
+        "set_flags": ["p01_fish_lamp_facing"],
+        "note": "p01_fish_lamp_facing=father"
+      }
+    },
+    {
+      "id": "TR_P01_WEDGES",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 900, "y": 1400, "w": 180, "h": 320 },
+      "once": true,
+      "req": { "dialogue_done": ["DLG_P01_06"] },
+      "result": { "set_flags": ["p01_wedges_taken"] }
+    },
+    {
+      "id": "TR_P01_EXIT",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 1010, "y": 600, "w": 70, "h": 700 },
+      "once": true,
+      "req": { "flags": ["p01_wedges_taken"] },
+      "result": { "to_scene_id": "P02_BRIDGE" },
+      "note": "右暗带。门未入画，热点落在右侧深处立柱暗部窄带"
+    }
+  ],
+  "paths": [
+    {
+      "from": "P01_HOME",
+      "trigger": "TR_P01_EXIT",
+      "to": "P02_BRIDGE",
+      "note": "声音接替（刨木→叫卖）"
+    }
+  ]
+}

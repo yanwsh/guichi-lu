@@ -87,5 +87,92 @@
       "COMBAT"
     ],
     "map_deferred": true
+  },
+  {
+    "scene_id": "P01_HOME",
+    "name": "P-01 歪尾巴的鱼",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_P01_REED",
+      "TR_P01_WOOD",
+      "TR_P01_PAPER",
+      "TR_P01_KNOT",
+      "TR_P01_KNOT_FIX",
+      "TR_P01_WINDOW",
+      "TR_P01_WEDGES"
+    ],
+    "enter_dialogue_id": "DLG_P01_01",
+    "next_scene_id": "P02_BRIDGE",
+    "note": "许家前堂。底板 TBD。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "P02_BRIDGE",
+    "name": "P-02 桥下的纸船",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_P02_CHENG",
+      "TR_P02_SISTERS",
+      "TR_P02_BOAT",
+      "TR_P02_BOAT_OPEN",
+      "TR_P02_LEAF",
+      "TR_P02_FATHER"
+    ],
+    "enter_dialogue_id": "DLG_P02_01",
+    "next_scene_id": "P03_BOAT",
+    "note": "白石渡桥头。底板 TBD。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "P03_BOAT",
+    "name": "P-03 没说完的赌气",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_P03_FATHER_ARRIVE",
+      "TR_P03_PARCEL",
+      "TR_P03_SUGAR",
+      "TR_P03_LOOKBACK"
+    ],
+    "enter_dialogue_id": "DLG_P03_01",
+    "next_scene_id": "P04_FLOOD",
+    "note": "去青蒲的客船。底板 TBD。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "P04_FLOOD",
+    "name": "P-04 河水过门槛",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_P04_ROPE",
+      "TR_P04_DRIFTBOX_A",
+      "TR_P04_SHELF",
+      "TR_P04_LAMP_GRAB",
+      "TR_P04_THRESHOLD",
+      "TR_P04_DOOR"
+    ],
+    "enter_dialogue_id": "DLG_P04_01",
+    "next_scene_id": "P05_SHELTER",
+    "note": "青蒲石阶与售灯小铺至石楼。底板 TBD。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "P05_SHELTER",
+    "name": "P-05 等谁",
+    "bg_key": "TBD",
+    "interactables": [
+      "TR_P05_COUNT",
+      "TR_P05_PARCEL",
+      "TR_P05_TRACE",
+      "TR_P05_MOTHER",
+      "TR_P05_BOX_STOW"
+    ],
+    "enter_dialogue_id": "DLG_P05_01",
+    "next_scene_id": "CH1_GATE",
+    "note": "石楼临时棚。底板 TBD。interactables 仅为 id，无 encounters。空表骨架，未接主路径。"
+  },
+  {
+    "scene_id": "CH1_GATE",
+    "name": "第一章 · 纸灯里有个人",
+    "bg_key": "TBD",
+    "interactables": [],
+    "enter_dialogue_id": "",
+    "next_scene_id": "",
+    "note": "标题卡占位。next_scene_id 为空，下一步未排。空表骨架，未接主路径。"
   }
 ]

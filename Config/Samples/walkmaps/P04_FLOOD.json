@@ -1,0 +1,185 @@
+{
+  "host_scene_id": "P04_FLOOD",
+  "coord_space": "image_pixel",
+  "origin": "top_left",
+  "y_axis": "down",
+  "canvas": {
+    "w": 1080,
+    "h": 1920
+  },
+  "art_ref": "docs/03-美术/灯渡/序章灰盒/P04_青蒲石阶暴雨.png",
+  "walkable_mask": null,
+  "version": "0.2",
+  "notes": "多底板：主=暴雨石阶；DOOR/EXIT art_ref=石楼外门；CUT_FATHER art_ref=救人切镜。ROPE 绳未入画，取门左侧叠层位；LAMP_GRAB 为绢灯叠层。PATH_01…03 盒重叠，以 p04_stage=1 上的 gate.time_slice 分时（数据，无 runtime）。cutaway 的 shape 为 null。",
+  "safe_ui": null,
+  "occlusion_sort": [],
+  "zones": [
+    {
+      "id": "Z_STEPS",
+      "shape": { "kind": "box", "x": 240, "y": 1000, "w": 840, "h": 920 }
+    },
+    {
+      "id": "Z_STREET_WATER",
+      "shape": { "kind": "box", "x": 0, "y": 950, "w": 600, "h": 970 }
+    }
+  ],
+  "triggers": [
+    {
+      "id": "TR_P04_ENTER",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 0, "y": 1100, "w": 400, "h": 400 },
+      "once": true,
+      "req": null,
+      "result": {
+        "dialogue_id": "DLG_P04_01",
+        "set_flags": ["p04_stage"],
+        "note": "p04_stage=0"
+      }
+    },
+    {
+      "id": "TR_P04_ROPE",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 560, "y": 950, "w": 160, "h": 200 },
+      "once": true,
+      "req": null,
+      "result": { "note": "取绳" },
+      "note": "绳。未入画，门左侧叠层位"
+    },
+    {
+      "id": "TR_P04_DRIFTBOX_A",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 215, "y": 1455, "r": 110 },
+      "once": false,
+      "req": { "triggers": ["TR_P04_ROPE"] },
+      "result": { "note": "失败回检查点 p04_stage=0" }
+    },
+    {
+      "id": "TR_P04_SHELF",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 730, "y": 770, "w": 280, "h": 240 },
+      "once": true,
+      "req": { "triggers": ["TR_P04_ROPE"] },
+      "result": {
+        "dialogue_id": "DLG_P04_02",
+        "set_flags": ["p04_shelf_secured"]
+      }
+    },
+    {
+      "id": "TR_P04_LAMP_GRAB",
+      "type": "interact",
+      "shape": { "kind": "circle", "x": 478, "y": 1590, "r": 160 },
+      "once": true,
+      "req": { "triggers": ["TR_P04_SHELF"] },
+      "result": {
+        "set_flags": ["p04_stage"],
+        "note": "p04_stage=1"
+      },
+      "note": "绢灯。伸手捞灯的叠层位"
+    },
+    {
+      "id": "TR_P04_PATH_01",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 250, "y": 1250, "w": 300, "h": 160 },
+      "once": false,
+      "req": { "flags_eq": [{ "flag_id": "p04_stage", "eq": 1 }] },
+      "gate": {
+        "time_slice": 1,
+        "stage": 1,
+        "note": "与 PATH_02/03 盒重叠，按 p04_stage 分时；本片为第一段。无 runtime。"
+      },
+      "result": { "note": "路径段1" }
+    },
+    {
+      "id": "TR_P04_PATH_02",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 420, "y": 1100, "w": 300, "h": 160 },
+      "once": false,
+      "req": { "flags_eq": [{ "flag_id": "p04_stage", "eq": 1 }] },
+      "gate": {
+        "time_slice": 2,
+        "stage": 1,
+        "after_trigger": "TR_P04_PATH_01",
+        "note": "与 PATH_01/03 盒重叠，须上一片已过且 p04_stage=1。无 runtime。"
+      },
+      "result": { "note": "路径段2" }
+    },
+    {
+      "id": "TR_P04_PATH_03",
+      "type": "enter",
+      "shape": { "kind": "box", "x": 480, "y": 1050, "w": 260, "h": 120 },
+      "once": false,
+      "req": { "flags_eq": [{ "flag_id": "p04_stage", "eq": 1 }] },
+      "gate": {
+        "time_slice": 3,
+        "stage": 1,
+        "after_trigger": "TR_P04_PATH_02",
+        "note": "末段。与 PATH_01/02 盒重叠，分时。无 runtime。"
+      },
+      "result": { "note": "路径段3（末）" }
+    },
+    {
+      "id": "TR_P04_THRESHOLD",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 600, "y": 1000, "w": 400, "h": 110 },
+      "once": true,
+      "req": {
+        "flags_eq": [{ "flag_id": "p04_stage", "eq": 1 }],
+        "triggers": ["TR_P04_PATH_03"]
+      },
+      "result": {
+        "dialogue_id": "DLG_P04_03",
+        "set_flags": ["p04_stage"],
+        "note": "PATH 末之后 p04_stage=2"
+      }
+    },
+    {
+      "id": "TR_P04_CUT_FATHER",
+      "type": "cutaway",
+      "shape": null,
+      "once": true,
+      "req": { "flags_eq": [{ "flag_id": "p04_stage", "eq": 2 }] },
+      "result": {
+        "set_flags": ["p04_father_cutaway_seen"],
+        "note": "cutaway。shape null 为预期。不亮结果。切镜未实现"
+      },
+      "art_ref": "docs/03-美术/灯渡/序章灰盒/P04_白石渡救人切镜.png"
+    },
+    {
+      "id": "TR_P04_DOOR",
+      "type": "interact",
+      "shape": { "kind": "box", "x": 575, "y": 630, "w": 260, "h": 310 },
+      "once": true,
+      "req": { "flags": ["p04_father_cutaway_seen"] },
+      "result": {
+        "dialogue_id": "DLG_P04_04",
+        "set_flags": ["p04_door_scratch", "p04_stage"],
+        "note": "p04_stage=3"
+      },
+      "art_ref": "docs/03-美术/灯渡/序章灰盒/P04_石楼外门.png"
+    },
+    {
+      "id": "TR_P04_EXIT",
+      "type": "cutaway",
+      "shape": null,
+      "once": true,
+      "req": { "flags_eq": [{ "flag_id": "p04_stage", "eq": 3 }] },
+      "result": {
+        "to_scene_id": "P05_SHELTER",
+        "note": "cutaway。shape null 为预期。切镜未实现"
+      },
+      "art_ref": "docs/03-美术/灯渡/序章灰盒/P04_石楼外门.png"
+    }
+  ],
+  "paths": [
+    {
+      "from": "P04_FLOOD",
+      "trigger": "TR_P04_EXIT",
+      "to": "P05_SHELTER",
+      "note": "雨退成哭声→黑"
+    }
+  ],
+  "art_ref_extra": {
+    "door_exit": "docs/03-美术/灯渡/序章灰盒/P04_石楼外门.png",
+    "cutaway_father": "docs/03-美术/灯渡/序章灰盒/P04_白石渡救人切镜.png"
+  }
+}
