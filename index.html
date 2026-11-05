@@ -26,7 +26,23 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 #zoneLabel{position:absolute;top:8vh;left:3%;z-index:5;pointer-events:none;color:#f4ecd8;background:#000a;padding:.6vh 1.6vh;border-radius:6px;font-size:2.2vh}
 #zoneLabel small{display:block;opacity:.75;font-size:1.7vh}
 #mapSub{font-size:1.8vh;letter-spacing:.14em;opacity:.8;margin-top:.6vh}
+#hotspotLayer{position:absolute;inset:0;z-index:8;pointer-events:none}
+#hotspotLayer.locked{visibility:hidden}
+#hotspotLayer.hidden{display:none}
+.hotspot{position:absolute;pointer-events:auto;box-sizing:border-box;border:1px solid #e8d7a8;background:#2a3b4acc;color:#f4ecd8;font-size:1.8vh;padding:.4vh .8vh;border-radius:8px;line-height:1.25}
+#gateCard{position:absolute;inset:0;z-index:24;pointer-events:auto;background:#14120f;color:#f4ecd8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;text-align:center;padding:8vh;box-sizing:border-box}
+#gateCard.hidden{display:none!important}
+#gateCard h2{margin:0;letter-spacing:.4em;font-size:6vh;font-weight:normal}
+#gateCard p{margin:0;letter-spacing:.28em;font-size:3vh;opacity:.9}
+#c01Banner{position:absolute;top:8vh;left:3%;right:3%;z-index:7;pointer-events:none;color:#f4ecd8;background:#000a;padding:.7vh 1.6vh;border-radius:6px;font-size:2vh}
+#c01Banner.hidden{display:none}
+#shortOp{position:absolute;left:6%;right:6%;top:18%;z-index:22;background:#1a1612f2;color:#f4ecd8;border:1px solid #e8d7a8;border-radius:12px;padding:2.2vh;display:flex;flex-direction:column;gap:1.2vh}
+#shortOp.hidden{display:none!important}
+#shortOp button{width:100%}
+.shortOpTitle{font-size:3vh;letter-spacing:.2em}
+.shortOpHint,.shortOpToast{font-size:2.2vh;line-height:1.5}
+.shortOpToast{color:#e7a08c}
 </style></head>
-<body><div id="app"><div id="title" class="ui"><h1>《归迟录》</h1><button id="enter">开始游戏</button><button id="continue" class="hidden" style="margin-top:2vh">继续</button><button id="enterTown" style="margin-top:2vh">SC_03 可走桩</button></div>
-<div id="hud" class="ui hud hidden"><div id="hudText">灰盒</div><div id="battleLog" class="hidden"></div><div class="row"><div id="interacts" class="row" style="margin:0"></div><button id="next" class="hidden">前往下一场景</button><button id="attack" class="hidden">攻击</button><button id="retreat" class="hidden">撤退（返回场景）</button><button id="dbgBattle">调试 · 战斗桩</button></div></div><button id="mapBtn" class="hidden">地图</button><div id="map" class="hidden"><h2 id="mapTitle">第一章</h2><div id="mapSub">非主路径 · 暂停总览</div><div id="mapObj"></div><div id="mapNodes"></div><button id="mapClose">关闭</button></div><div id="locCard"></div><div id="reward" class="hidden"><h2>获得</h2><div id="rewardBody"></div><button id="rewardOk">收好，进镇</button></div><div id="endCard" class="hidden"><h2 id="endTitle">第一章 · 未完</h2><div id="endBody"></div><div class="row"><button id="endClose">关闭</button><button id="endContinue">继续</button></div></div><div id="zoneLabel" class="hidden"><span id="zoneName">山门前</span><small id="zoneObj"></small></div><div id="joystick" class="hidden"><div id="joyKnob"></div></div><button id="walkInteract" class="hidden">调查</button><div id="dialogDim" class="hidden"></div><img id="talkPortrait" class="hidden" alt=""><div id="dialog" class="hidden"></div></div>
+<body><div id="app"><div id="title" class="ui"><h1>《归迟录》</h1><button id="enter">开始游戏</button><button id="continue" class="hidden" style="margin-top:2vh">继续</button><button id="enterTown" style="margin-top:2vh">SC_03 可走桩</button><button id="enterC01" style="margin-top:2vh">第一章 · 纸灯</button></div>
+<div id="hud" class="ui hud hidden"><div id="hudText">灰盒</div><div id="battleLog" class="hidden"></div><div class="row"><div id="interacts" class="row" style="margin:0"></div><button id="next" class="hidden">前往下一场景</button><button id="attack" class="hidden">攻击</button><button id="retreat" class="hidden">撤退（返回场景）</button><button id="dbgBattle">调试 · 战斗桩</button></div></div><button id="mapBtn" class="hidden">地图</button><div id="map" class="hidden"><h2 id="mapTitle">第一章</h2><div id="mapSub">非主路径 · 暂停总览</div><div id="mapObj"></div><div id="mapNodes"></div><button id="mapClose">关闭</button></div><div id="locCard"></div><div id="reward" class="hidden"><h2>获得</h2><div id="rewardBody"></div><button id="rewardOk">收好，进镇</button></div><div id="endCard" class="hidden"><h2 id="endTitle">第一章 · 未完</h2><div id="endBody"></div><div class="row"><button id="endClose">关闭</button><button id="endContinue">继续</button></div></div><div id="zoneLabel" class="hidden"><span id="zoneName">山门前</span><small id="zoneObj"></small></div><div id="joystick" class="hidden"><div id="joyKnob"></div></div><button id="walkInteract" class="hidden">调查</button><div id="c01Banner" class="hidden"></div><div id="hotspotLayer" class="hidden"></div><div id="gateCard" class="hidden"><p>灯渡</p><h2>第一章</h2><p>纸灯里有个人</p><button id="gateEnter" type="button">进入青蒲灯铺</button></div><div id="shortOp" class="hidden"></div><div id="dialogDim" class="hidden"></div><img id="talkPortrait" class="hidden" alt=""><div id="dialog" class="hidden"></div></div>
 <script type="module" src="/src/main.ts"></script></body></html>

@@ -6,6 +6,17 @@ export class ScenePresenter {
   private cache = new Map<string, THREE.Texture>();
   onInteract: (id: string) => void = () => {};
   constructor(private scene: THREE.Scene, private interactRoot: HTMLElement) {}
+  /** 灯渡热点场只铺一块地名底板，不把 interactables 铺成调查按钮。 */
+  showPlate(row: SceneRow) {
+    this.interactRoot.innerHTML = '';
+    const cv = document.createElement('canvas'); cv.width = 256; cv.height = 456;
+    const x = cv.getContext('2d')!;
+    x.fillStyle = '#2c261c'; x.fillRect(0, 0, 256, 456);
+    x.fillStyle = '#e8d7a8'; x.font = '26px serif'; x.textAlign = 'center';
+    x.fillText(row.name, 128, 210);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+    this.scene.background = t;
+  }
   show(row: SceneRow) {
     const url = resolveBg(row.bg_key);
     const apply = (t: THREE.Texture) => { this.scene.background = t; };
