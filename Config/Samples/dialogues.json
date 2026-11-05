@@ -407,127 +407,367 @@
   },
   {
     "dialogue_id": "DLG_C01A_01",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "被催下楼，门口三人排队：何掌柜、程婶、严二。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_02",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "认价牌，再认人。咬饼，查灯骨。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_03",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "把剪刀钱并进修屋匣。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "把剪刀也替我拿着。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_04",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "取送灯，装上背架。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_05",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "交灯，收钱。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_06",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "严二垫药欠薪，拿旧杉木抵账。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_07",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
-    "choices": []
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "严二的账，三样里选一样：杉木、分期，或欠条。"
+      }
+    ],
+    "choices": [
+      {
+        "choice_id": "CHO_C01_YAN2_WOOD",
+        "text": "收下杉木",
+        "set_flag": "c01_yan2_debt",
+        "value": 1,
+        "followup_lines": [
+          {
+            "speaker": "旁白",
+            "portrait_key": "",
+            "text": "收下杉木。"
+          }
+        ]
+      },
+      {
+        "choice_id": "CHO_C01_YAN2_INSTALLMENT",
+        "text": "分期，先延期",
+        "set_flag": "c01_yan2_debt",
+        "value": 2,
+        "followup_lines": [
+          {
+            "speaker": "旁白",
+            "portrait_key": "",
+            "text": "分期，先延期。"
+          }
+        ]
+      },
+      {
+        "choice_id": "CHO_C01_YAN2_IOU",
+        "text": "只留欠条",
+        "set_flag": "c01_yan2_debt",
+        "value": 3,
+        "followup_lines": [
+          {
+            "speaker": "旁白",
+            "portrait_key": "",
+            "text": "只留欠条。"
+          }
+        ]
+      }
+    ]
   },
   {
     "dialogue_id": "DLG_C01A_08",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "陶慎核粮船出港，嫌灯架挡路。"
+      },
+      {
+        "speaker": "陶慎",
+        "portrait_key": "",
+        "text": "站远些。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_09",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "程婶嫌灯暗。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_10",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "卸下重灯，反结分力，穿到另一侧。"
+      },
+      {
+        "speaker": "程婶",
+        "portrait_key": "",
+        "text": "多费这一点。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01A_11",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "伸手要磨卷刃的剪刀。母亲不交。钱包放回去。软铁，她提醒过。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "还没老到不会买东西。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_01",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "他进门，翻最便宜的一盏，看灯底。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_02",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "谁教你这种接法。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "做久就会。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "话停在这里。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_03",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "拆开外层，找到受扭力的那根骨，卸了力。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "追问来处，只答到商路的名字，真地点避开。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_04",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "订金收下。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "有违禁物不替人藏。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_05",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "他记前门、后门、楼梯、临河的窗。许照宁戒备。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_06",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "灯穗和沉水灯微微一应。他不追问，约日落来取。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01B_07",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "切镜。许照宁不在这场里。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "药单写着小荼的症状。守卫轮班。假印入了掌心。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_01",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "窗口再看白天的灯绳。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_02",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "空碗。母女替它找理由：柳婆来过、忘了收、先推酱菜。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_03",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "磨痕和常多拿的那一只一样。玩笑说过，没有人动筷。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_04",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "阁楼里金属轻响。上楼。楼下收桌的声音还在。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_05",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "破骨拆掉，细反结系上。火往里缩了一点。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_06",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "别咬线。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "线头被吐出来，小刀碰翻。再系再拆，这句话不来第二次。"
+      }
+    ],
     "choices": []
   },
   {
     "dialogue_id": "DLG_C01C_07",
-    "lines": [{ "speaker": "旁白", "portrait_key": "", "text": "（骨架占位）" }],
+    "lines": [
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "母女同压在一个受力点上。"
+      }
+    ],
     "choices": []
   },
   {
