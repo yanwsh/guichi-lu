@@ -409,9 +409,19 @@
     "dialogue_id": "DLG_C01A_01",
     "lines": [
       {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "阿宁，下来！门口三个人等灯了。"
+      },
+      {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "被催下楼，门口三人排队：何掌柜、程婶、严二。"
+        "text": "何掌柜要换招牌灯，程婶嫌自家那盏暗，船工严二拖了半个月工钱。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "先认价牌，再认人。"
       }
     ],
     "choices": []
@@ -422,7 +432,12 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "认价牌，再认人。咬饼，查灯骨。"
+        "text": "价写在牌上，修过的不当新的卖。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "（咬着饼翻灯骨）这根还撑得住。"
       }
     ],
     "choices": []
@@ -431,14 +446,29 @@
     "dialogue_id": "DLG_C01A_03",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "许照宁",
         "portrait_key": "",
-        "text": "把剪刀钱并进修屋匣。"
+        "text": "屋顶要买瓦，差这些。"
       },
       {
         "speaker": "梁素娘",
         "portrait_key": "",
-        "text": "把剪刀也替我拿着。"
+        "text": "那包别动。我知道屋顶漏。是我要买剪刀的钱。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "这把还能磨。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "你若觉得我手里拿不住钱，就把剪刀也替我拿着。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "照宁还没来得及回答，何掌柜已经催第三遍。"
       }
     ],
     "choices": []
@@ -449,7 +479,7 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "取送灯，装上背架。"
+        "text": "三盏灯装上背架。先送药铺，再沿河收账。"
       }
     ],
     "choices": []
@@ -458,9 +488,19 @@
     "dialogue_id": "DLG_C01A_05",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "何掌柜",
         "portrait_key": "",
-        "text": "交灯，收钱。"
+        "text": "可算来了，招牌灯今儿就得挂上。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "灯您验，钱我数。"
+      },
+      {
+        "speaker": "何掌柜",
+        "portrait_key": "",
+        "text": "数吧数吧，一文不少。"
       }
     ],
     "choices": []
@@ -469,9 +509,14 @@
     "dialogue_id": "DLG_C01A_06",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "严二",
         "portrait_key": "",
-        "text": "严二垫药欠薪，拿旧杉木抵账。"
+        "text": "照宁姑娘……工钱我替伤了的兄弟垫了药。"
+      },
+      {
+        "speaker": "严二",
+        "portrait_key": "",
+        "text": "这截旧杉木，先抵着？"
       }
     ],
     "choices": []
@@ -480,9 +525,9 @@
     "dialogue_id": "DLG_C01A_07",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "许照宁",
         "portrait_key": "",
-        "text": "严二的账，三样里选一样：杉木、分期，或欠条。"
+        "text": "（选择）收下杉木 / 分期延后 / 只留张欠条。"
       }
     ],
     "choices": [
@@ -493,35 +538,35 @@
         "value": 1,
         "followup_lines": [
           {
-            "speaker": "旁白",
+            "speaker": "严二",
             "portrait_key": "",
-            "text": "收下杉木。"
+            "text": "……记着了。"
           }
         ]
       },
       {
         "choice_id": "CHO_C01_YAN2_INSTALLMENT",
-        "text": "分期，先延期",
+        "text": "分期延后",
         "set_flag": "c01_yan2_debt",
         "value": 2,
         "followup_lines": [
           {
-            "speaker": "旁白",
+            "speaker": "严二",
             "portrait_key": "",
-            "text": "分期，先延期。"
+            "text": "……记着了。"
           }
         ]
       },
       {
         "choice_id": "CHO_C01_YAN2_IOU",
-        "text": "只留欠条",
+        "text": "只留张欠条",
         "set_flag": "c01_yan2_debt",
         "value": 3,
         "followup_lines": [
           {
-            "speaker": "旁白",
+            "speaker": "严二",
             "portrait_key": "",
-            "text": "只留欠条。"
+            "text": "……记着了。"
           }
         ]
       }
@@ -531,14 +576,14 @@
     "dialogue_id": "DLG_C01A_08",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "陶慎",
         "portrait_key": "",
-        "text": "陶慎核粮船出港，嫌灯架挡路。"
+        "text": "粮船申时前必须出港，谁抢船位谁去河署说。"
       },
       {
         "speaker": "陶慎",
         "portrait_key": "",
-        "text": "站远些。"
+        "text": "（瞥灯架）你，站远些，别挡路。"
       }
     ],
     "choices": []
@@ -547,9 +592,14 @@
     "dialogue_id": "DLG_C01A_09",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "程婶",
         "portrait_key": "",
-        "text": "程婶嫌灯暗。"
+        "text": "我这盏怎么比隔壁暗？"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "不是灯暗，是挂歪了。我替您重挂。"
       }
     ],
     "choices": []
@@ -560,12 +610,22 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "卸下重灯，反结分力，穿到另一侧。"
+        "text": "照原法拉紧，老檐木吱地一响。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "不行，整串吃在一根木上。先卸一只重的。"
       },
       {
         "speaker": "程婶",
         "portrait_key": "",
-        "text": "多费这一点。"
+        "text": "算钱厉害，做活也舍得多费劲。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "多费这一点，总比出了事再来强。"
       }
     ],
     "choices": []
@@ -576,12 +636,42 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "伸手要磨卷刃的剪刀。母亲不交。钱包放回去。软铁，她提醒过。"
+        "text": "母亲用卷刃的剪刀剪绸，刀口扯出一条歪线。"
       },
       {
         "speaker": "梁素娘",
         "portrait_key": "",
-        "text": "还没老到不会买东西。"
+        "text": "再磨，布替它疼。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "我替您磨——"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "周家钱还没拿回来，你先替我花了。"
+      },
+      {
+        "speaker": "柳婆",
+        "portrait_key": "",
+        "text": "两把都买。买大的，剪她这张会算的嘴。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "（把钱包放回）那您别去桥头那家。刀口说是精铁，剪纸都卷。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "我买了三十年东西，还得你领着？"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "小争执没有结束，只被赶灯节的忙碌按下。"
       }
     ],
     "choices": []
@@ -592,7 +682,27 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "他进门，翻最便宜的一盏，看灯底。"
+        "text": "客人没先看灯面，把最便宜一盏翻到底。"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "这边断过。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "修过。价写着，没当新的卖。"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "我没说贵。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "你这脸看着像下一句就说。"
       }
     ],
     "choices": []
@@ -603,17 +713,22 @@
       {
         "speaker": "晏归",
         "portrait_key": "",
-        "text": "谁教你这种接法。"
+        "text": "谁教你这样接？一般人会多缠两道。"
       },
       {
         "speaker": "许照宁",
         "portrait_key": "",
-        "text": "做久就会。"
+        "text": "多缠两道，下回一湿还是裂。"
       },
       {
-        "speaker": "旁白",
+        "speaker": "晏归",
         "portrait_key": "",
-        "text": "话停在这里。"
+        "text": "我问谁教的。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "……做久了就会。"
       }
     ],
     "choices": []
@@ -622,14 +737,34 @@
     "dialogue_id": "DLG_C01B_03",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "晏归",
         "portrait_key": "",
-        "text": "拆开外层，找到受扭力的那根骨，卸了力。"
+        "text": "这种呢？水里捞的。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "你捞的水，挺热。"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "所以找会修的。"
       },
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "追问来处，只答到商路的名字，真地点避开。"
+        "text": "拆开外层：一根骨没烂，却一直吃着不该有的扭力。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "在哪儿捞的？"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "走西边商路时。"
       }
     ],
     "choices": []
@@ -638,14 +773,14 @@
     "dialogue_id": "DLG_C01B_04",
     "lines": [
       {
-        "speaker": "旁白",
-        "portrait_key": "",
-        "text": "订金收下。"
-      },
-      {
         "speaker": "许照宁",
         "portrait_key": "",
-        "text": "有违禁物不替人藏。"
+        "text": "得拆。里面若有见不得人的东西，我可不替你藏。"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "订金先付，日落来拿。"
       }
     ],
     "choices": []
@@ -656,7 +791,12 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "他记前门、后门、楼梯、临河的窗。许照宁戒备。"
+        "text": "他帮母亲把灯罩抬上梁，顺眼看过前后门、楼梯和临河小窗。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "（心想）惯会套近乎……手脚倒利索。"
       }
     ],
     "choices": []
@@ -667,7 +807,12 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "灯穗和沉水灯微微一应。他不追问，约日落来取。"
+        "text": "楼梯旁旧灯穗轻轻一颤，与他带来的灯相应。"
+      },
+      {
+        "speaker": "晏归",
+        "portrait_key": "",
+        "text": "……日落我来取。"
       }
     ],
     "choices": []
@@ -678,12 +823,17 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "切镜。许照宁不在这场里。"
+        "text": "窄巷。药单上写着小荼的症状。"
       },
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "药单写着小荼的症状。守卫轮班。假印入了掌心。"
+        "text": "河署维护渠，守卫换班声。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "一块包好的假印落进他掌心。"
       }
     ],
     "choices": []
@@ -694,7 +844,7 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "窗口再看白天的灯绳。"
+        "text": "镇上试点第一串河灯。照宁从窗口再看一眼白天挂的灯绳。"
       }
     ],
     "choices": []
@@ -703,9 +853,49 @@
     "dialogue_id": "DLG_C01C_02",
     "lines": [
       {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "晏先生的饭也算上了？"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "那个买灯的？他又没说留饭。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "柳婆方才坐过，我顺手多拿了。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "她在她儿子那儿吃。您还让她少喝点酒。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "是么。那我算岔了。"
+      },
+      {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "空碗。母女替它找理由：柳婆来过、忘了收、先推酱菜。"
+        "text": "她端碗起身，另一只手却先把酱菜推到空位前。推到一半才停住。"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "上回也是。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "人老了，手比脑子快。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "阿宁，咱们是不是……总欠谁一顿饭？"
       }
     ],
     "choices": []
@@ -716,7 +906,22 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "磨痕和常多拿的那一只一样。玩笑说过，没有人动筷。"
+        "text": "碗底那圈磨痕，和平常多拿的那只一样。"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "你老盯着做什么？"
+      },
+      {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "怕娘瞒着我，认了个会赚钱的好闺女。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "笑完，谁也没有动筷。"
       }
     ],
     "choices": []
@@ -727,7 +932,12 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "阁楼里金属轻响。上楼。楼下收桌的声音还在。"
+        "text": "阁楼上，金属轻响，像旧灯碰到木匣。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "楼下，母亲还在收桌。"
       }
     ],
     "choices": []
@@ -738,7 +948,12 @@
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "破骨拆掉，细反结系上。火往里缩了一点。"
+        "text": "她把上午的反结改成更细的一道。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "灯火本已快灭，结稳以后，忽然向内缩成一点。"
       }
     ],
     "choices": []
@@ -747,14 +962,19 @@
     "dialogue_id": "DLG_C01C_06",
     "lines": [
       {
-        "speaker": "旁白",
+        "speaker": "？？？",
         "portrait_key": "",
         "text": "别咬线。"
       },
       {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "线头被吐出来，小刀碰翻。再系再拆，这句话不来第二次。"
+        "text": "她吐出线头，转身时碰翻小刀。屋里没有人。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "再系，再拆。声音不肯重复。"
       }
     ],
     "choices": []
@@ -763,9 +983,24 @@
     "dialogue_id": "DLG_C01C_07",
     "lines": [
       {
+        "speaker": "许照宁",
+        "portrait_key": "",
+        "text": "娘，以前是谁修这盏灯？"
+      },
+      {
+        "speaker": "梁素娘",
+        "portrait_key": "",
+        "text": "……不认得。"
+      },
+      {
         "speaker": "旁白",
         "portrait_key": "",
-        "text": "母女同压在一个受力点上。"
+        "text": "母亲摸到结，本能压住同一个受力点。"
+      },
+      {
+        "speaker": "旁白",
+        "portrait_key": "",
+        "text": "一个想不起教自己的人，一个不知道自己为何会。"
       }
     ],
     "choices": []

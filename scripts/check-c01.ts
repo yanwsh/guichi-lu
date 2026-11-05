@@ -82,6 +82,7 @@ applySetFlags(flags, ['c01_paid_he'])
 
 const debt = byDlg.get('DLG_C01A_07')
 if (!debt || debt.choices.map(c => c.value).join() !== `${YAN2_DEBT.wood},${YAN2_DEBT.installment},${YAN2_DEBT.iou}`) fail('debt choices')
+if (debt.choices.map(c => c.text).join('|') !== '收下杉木|分期延后|只留张欠条') fail('debt labels')
 flags.c01_yan2_debt = YAN2_DEBT.installment
 applySetFlags(flags, ['c01_yan2_debt'])
 if (flags.c01_yan2_debt !== YAN2_DEBT.installment) fail('enum clobber')
@@ -149,7 +150,7 @@ mustHidden(trig(shop, 'TR_C01_04_BREAKIN'), flags, seen, 'C01_SHOP')
 mustHidden(trig(shop, 'TR_C01_04_EXIT'), flags, seen, 'C01_SHOP')
 if (visibleHotspots(shop, flags, seen).length !== 0) fail('hotspots after 03')
 
-const hooks = ['把剪刀也替我拿着', '站远些', '多费这一点', '还没老到不会买东西', '谁教你这种接法', '做久就会', '有违禁物不替人藏', '别咬线。']
+const hooks = ['就把剪刀也替我拿着', '站远些', '多费这一点', '我买了三十年东西，还得你领着', '谁教你这样接', '做久了就会', '我可不替你藏', '别咬线。']
 const blob = dialogues.filter(d => /^DLG_C01[ABC]_/.test(d.dialogue_id)).map(d => d.lines.map(l => l.text).join('\n')).join('\n')
 for (const hook of hooks) if (!blob.includes(hook)) fail(`missing hook ${hook}`)
 for (const row of dialogues) {
@@ -159,6 +160,6 @@ for (const row of dialogues) {
 if (byDlg.get('DLG_C01D_01')?.lines[0].text !== '（骨架占位）') fail('later dialogue touched')
 if (byDlg.get('DLG_P01_01')?.lines[0].text !== '（骨架占位）') fail('prologue dialogue touched')
 const antiknot = street.triggers.find(t => t.id === 'MG_C01_01_ANTIKNOT')
-if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.w !== 240 || antiknot.shape.h !== 700) fail('antiknot box changed')
+if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 160 || antiknot.shape.y !== 380 || antiknot.shape.w !== 370 || antiknot.shape.h !== 700) fail('antiknot box')
 
 console.log('c01 playable checks ok', { beat: openBeat(flags), debt: flags.c01_yan2_debt })
