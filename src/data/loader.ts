@@ -1,5 +1,6 @@
 import type { GameDb, SceneRow, DialogueRow, EncounterRow, FlagRow, LinkRow, MapNodeRow, SceneTrigger } from './types';
 import type { WalkMap } from '../walk/walkTypes';
+import type { HotspotMap } from './hotspotTypes';
 const base = `${import.meta.env.BASE_URL}config/`;
 async function get<T>(name: string): Promise<T> {
   const r = await fetch(base + name + '.json');
@@ -20,4 +21,10 @@ export async function loadWalkMap(sceneId: string): Promise<WalkMap | null> {
   const r = await fetch(`${base}walkmaps/${sceneId}.json`);
   if (!r.ok) return null;
   return r.json() as Promise<WalkMap>;
+}
+/** 灯渡章题卡 / 灯铺 / 镇街。表结构与 SC_03 不同，不要送进 WalkScene.load。 */
+export async function loadHotspotMap(sceneId: string): Promise<HotspotMap | null> {
+  const r = await fetch(`${base}walkmaps/${sceneId}.json`);
+  if (!r.ok) return null;
+  return r.json() as Promise<HotspotMap>;
 }

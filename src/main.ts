@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { loadGameDb, loadWalkMap, walkArtBase } from './data/loader';
+import { loadGameDb, loadHotspotMap, loadWalkMap, walkArtBase } from './data/loader';
 import { newGame, loadGame, clearSave, saveGame, type GameState } from './save/gameState';
 import { ScenePresenter } from './scene/scenePresenter';
 import { DialogRunner } from './dialog/dialogRunner';
@@ -7,6 +7,11 @@ import { FlowController } from './flow/flowController';
 import { attackTurn } from './battle/battleLogic';
 import { nodeStates, enterNode, locationTitle } from './map/chapterMap';
 import { WalkScene } from './walk/walkScene';
+import { HotspotBoard } from './scene/hotspotBoard';
+import { ShortOpPanel } from './shortop/shortOpPanel';
+import type { ShortOpDef } from './shortop/shortOps';
+import { bannerText, isHotspotScene, nextAuto, nextEnter, visibleHotspots } from './walk/c01Flow';
+import type { HotspotMap, HotspotTrigger } from './data/hotspotTypes';
 import type { GameDb, MapNodeRow } from './data/types';
 function toast(t: string) { const el = $('locCard'); el.textContent = t; el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 900); }
 let gdb: GameDb;
@@ -63,6 +68,11 @@ const show = (id: string, on: boolean) => $(id).classList.toggle('hidden', !on);
 const presenter = new ScenePresenter(scene, $('interacts'));
 const dialog = new DialogRunner($('dialog'), $('talkPortrait') as HTMLImageElement, $('dialogDim'));
 const walk = new WalkScene();
+const hotspotMaps = new Map<string, HotspotMap>();
+const hotspotBoard = new HotspotBoard($('hotspotLayer'));
+const shortOpPanel = new ShortOpPanel($('shortOp'));
+let hotspotOn = false;
+let hotspotBusy = false;
 let promptLabel: string | null = null;
 let flow: FlowController;
 let sceneBg: THREE.Color | THREE.Texture | null = null;
@@ -70,6 +80,58 @@ function setEndChrome(on: boolean) {
   $('hud').style.visibility = on ? 'hidden' : '';
   $('zoneLabel').style.visibility = on ? 'hidden' : '';
   $('mapBtn').style.visibility = on ? 'hidden' : '';
+}
+function syncHotspotChrome() {
+  const talking = !$('dialog').classList.contains('hidden') || !$('shortOp').classList.contains('hidden') || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden');
+  show('hotspotLayer', hotspotOn);
+  show('c01Banner', hotspotOn);
+  show('gateCard', hotspotOn && flow?.state.scene_id === 'CH1_GATE' && !talking);
+  hotspotBoard.setLocked(talking || hotspotBusy);
+  show('dbgBattle', !hotspotOn && mode !== 'battle');
+  show('mapBtn', !hotspotOn && mode !== 'battle');
+  renderer.domElement.style.pointerEvents = hotspotOn ? 'none' : '';
+  if (hotspotOn) { show('joystick', false); show('walkInteract', false); show('zoneLabel', false); }
+}
+function refreshHotspots() {
+  if (!hotspotOn || !flow) return;
+  const map = hotspotMaps.get(flow.state.scene_id);
+  $('c01Banner').textContent = bannerText(flow.state.flags);
+  if (!map) { hotspotBoard.clear(); return; }
+  hotspotBoard.render(visibleHotspots(map, flow.state.flags, flow.state.triggered_ids ?? []));
+}
+async function flushHotspotAutos() {
+  while (flow && isHotspotScene(flow.state.scene_id)) {
+    const map = hotspotMaps.get(flow.state.scene_id);
+    if (!map) break;
+    const auto = nextAuto(map.triggers, flow.state.flags, flow.state.triggered_ids ?? [], flow.state.scene_id);
+    if (!auto) break;
+    await flow.handleHotspotTrigger(auto);
+  }
+}
+async function presentHotspot(sceneId: string) {
+  hotspotOn = true;
+  const map = hotspotMaps.get(sceneId) ?? null;
+  hotspotBoard.setMap(map);
+  syncHotspotChrome();
+  if (sceneId === 'CH1_GATE') { hotspotBoard.clear(); $('c01Banner').textContent = '第一章 · 纸灯里有个人'; return; }
+  const enter = map && nextEnter(map.triggers, flow.state.flags, flow.state.triggered_ids ?? [], sceneId);
+  if (enter) await flow.handleHotspotTrigger(enter);
+  if (flow.state.scene_id === sceneId) await flushHotspotAutos();
+  refreshHotspots();
+  syncHotspotChrome();
+}
+async function activateHotspot(trigger: HotspotTrigger) {
+  if (hotspotBusy || !flow) return;
+  hotspotBusy = true;
+  syncHotspotChrome();
+  try {
+    await flow.handleHotspotTrigger(trigger);
+    if (isHotspotScene(flow.state.scene_id)) await flushHotspotAutos();
+  } finally {
+    hotspotBusy = false;
+    if (isHotspotScene(flow.state.scene_id)) refreshHotspots();
+    syncHotspotChrome();
+  }
 }
 function syncWalkChrome() {
   const on = walk.isActive() && mode !== 'title';
@@ -118,8 +180,10 @@ const hooks = {
     $('endClose').onclick = dismiss;
     $('endContinue').onclick = () => { dismiss(); if (n.hook_scene_id) void flow.goto(n.hook_scene_id, `FLOW_${n.hook_scene_id}`, { hook: true }); };
   },
-  onWalkMode: (on: boolean) => { if (on) { const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); },
+  onWalkMode: (on: boolean) => { if (on) { hotspotOn = false; const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); syncHotspotChrome(); },
   onToast: (t: string) => toast(t),
+  onHotspotScene: (sceneId: string) => presentHotspot(sceneId),
+  onShortOp: (op: ShortOpDef) => shortOpPanel.run(op),
 };
 function openMap() {
   if (mode !== 'explore' || !$('dialog').classList.contains('hidden')) return;
@@ -180,9 +244,15 @@ loadGameDb().then(async db => {
     const wm = await loadWalkMap('SC_03_TOWN');
     if (wm) { await walk.load(wm, walkArtBase('SC_03_TOWN')); layoutSafe(); }
   } catch (err) { console.error(err); }
+  try {
+    for (const id of ['CH1_GATE', 'C01_SHOP', 'C01_STREET']) {
+      const map = await loadHotspotMap(id);
+      if (map) hotspotMaps.set(id, map);
+    }
+  } catch (err) { console.error(err); }
   const saved = loadGame(); show('continue', !!saved);
   const begin = (s: GameState) => {
-    mode = 'explore'; show('title', false); show('hud', true); show('mapBtn', true);
+    mode = 'explore'; show('title', false); show('hud', true); show('mapBtn', !isHotspotScene(s.scene_id));
     flow = new FlowController(db, s, dialog, presenter, hooks);
     walk.setHooks({
       flags: () => flow.state.flags,
@@ -203,6 +273,14 @@ loadGameDb().then(async db => {
   $('enterTown').onclick = () => {
     clearSave(); const s = newGame(db.flags); s.scene_id = 'SC_03_TOWN'; s.flow_node_id = 'FLOW_SC_03_TOWN'; begin(s);
   };
+  $('enterC01').onclick = () => {
+    clearSave(); const s = newGame(db.flags); s.scene_id = 'CH1_GATE'; s.flow_node_id = 'FLOW_CH1_GATE'; begin(s);
+  };
+  hotspotBoard.onClick = trigger => { void activateHotspot(trigger); };
+  $('gateEnter').onclick = () => {
+    const start = hotspotMaps.get('CH1_GATE')?.triggers.find(t => t.id === 'TR_CH1_GATE_START');
+    if (start) void activateHotspot(start);
+  };
 }).catch(e => { $('hudText').textContent = String(e); console.error(e); });
 function resize() { const r = app.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); walk.resize(r.width, r.height); }
 addEventListener('resize', resize); resize();
@@ -210,6 +288,16 @@ const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
+  if (hotspotOn && mode !== 'title') {
+    syncHotspotChrome();
+    ground.visible = false;
+    chars.forEach(c => { c.visible = false; });
+    enemy.visible = false;
+    renderer.render(scene, camera);
+    return;
+  }
+  ground.visible = true;
+  if (!hotspotOn) { show('hotspotLayer', false); show('gateCard', false); show('c01Banner', false); }
   if (walk.isActive() && mode !== 'title') { walk.update(dt); syncWalkChrome(); renderer.render(walk.scene, walk.camera); return; }
   chars.forEach((c, i) => {
     c.visible = mode !== 'title';

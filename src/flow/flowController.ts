@@ -5,6 +5,10 @@ import type { ScenePresenter } from '../scene/scenePresenter';
 import { startBattle } from '../battle/battleLogic';
 import type { WalkBridge } from '../walk/walkScene';
 import type { WalkTrigger } from '../walk/walkTypes';
+import type { HotspotTrigger } from '../data/hotspotTypes';
+import type { ShortOpDef } from '../shortop/shortOps';
+import { shortOpForTrigger } from '../shortop/shortOps';
+import { allowedHop, applySetFlags, isHotspotScene } from '../walk/c01Flow';
 export interface FlowHooks {
   onSceneReady(sceneName: string, hasNext: boolean): void;
   onBattleStart(): void;
@@ -14,6 +18,8 @@ export interface FlowHooks {
   onChapterEnd?(node: MapNodeRow): void;
   onWalkMode?(on: boolean): void;
   onToast?(text: string): void;
+  onHotspotScene?(sceneId: string): void | Promise<void>;
+  onShortOp?(op: ShortOpDef): Promise<boolean>;
 }
 /** 灰盒：抉择→分支对白（苏禾草稿 README，不改 DialogueRow） */
 const CHOICE_DIALOGUE: Record<string, string> = { CHO_OPEN_LETTER: 'DLG_OPEN_LETTER_PEEK', CHO_KEEP_SEALED: 'DLG_OPEN_LETTER_KEEP', CHO_SAVE_LIFE: 'DLG_CHOICE_SAVE_01', CHO_CHASE: 'DLG_CHOICE_CHASE_01' };
@@ -37,6 +43,17 @@ export class FlowController {
     const row = this.db.scenes.get(sceneId); if (!row) throw new Error(`unknown scene ${sceneId}`);
     // SC_05 后置：故事流和结束卡「继续」都不播 Boss stub。
     if (this.deferredBoss(sceneId)) { this.chapterEnd(); return; }
+    if (isHotspotScene(sceneId)) {
+      this.state.scene_id = sceneId; this.state.flow_node_id = flowNode;
+      const visited = (this.state.visited_scene_ids ??= []); if (!visited.includes(sceneId)) visited.push(sceneId);
+      saveGame(this.state);
+      this.walk?.hide();
+      this.hooks.onWalkMode?.(false);
+      this.presenter.showPlate(row);
+      this.hooks.onSceneReady(row.name, false);
+      await this.hooks.onHotspotScene?.(sceneId);
+      return;
+    }
     this.state.scene_id = sceneId; this.state.flow_node_id = flowNode;
     const v = (this.state.visited_scene_ids ??= []); if (!v.includes(sceneId)) v.push(sceneId);
     const useWalk = sceneId === 'SC_03_TOWN' && !!this.walk?.ready;
@@ -104,6 +121,23 @@ export class FlowController {
   interact(id: string) {
     const enc = this.db.scenes.get(this.state.scene_id)?.interact_encounters?.[id];
     if (enc) this.beginBattle(enc);
+  }
+  /**
+   * 灯渡热点。短操作没做完不写旗标、不标 once。
+   * 只允许章题卡、灯铺、镇街之间跳转，不去灯街 / 火后 / 待续。
+   */
+  async handleHotspotTrigger(t: HotspotTrigger) {
+    const op = shortOpForTrigger(t.id);
+    if (op) {
+      const ok = await this.hooks.onShortOp?.(op);
+      if (!ok) return;
+    }
+    if (t.result?.dialogue_id) await this.playChain(t.result.dialogue_id);
+    applySetFlags(this.state.flags, t.result?.set_flags);
+    if (t.once !== false) this.markTrigger(t.id);
+    saveGame(this.state);
+    const dest = t.result?.goto_scene;
+    if (dest && allowedHop(this.state.scene_id, dest)) await this.goto(dest);
   }
   /** SC_03 可走触发。对白锁移动由 WalkScene 在回调期间停步。 */
   async handleWalkTrigger(t: WalkTrigger) {
