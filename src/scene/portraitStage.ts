@@ -9,6 +9,8 @@ export class PortraitStage {
   private nodes = new Map<string, HTMLElement>()
   private frameW = 1080
   private urlBase = '/'
+  /** Runs after cutouts are positioned, so a narrow frame can lift them above the plate. */
+  onPlaced: () => void = () => {}
 
   constructor(private root: HTMLElement) {}
 
@@ -108,5 +110,6 @@ export class PortraitStage {
       node.style.top = 'auto'
       node.style.bottom = '0px'
     })
+    this.onPlaced()
   }
 }
