@@ -97,10 +97,6 @@ function shapeCenter(shape) {
   if (shape.kind === 'circle') return { x: shape.x, y: shape.y }
   return { x: shape.x + shape.w / 2, y: shape.y + shape.h / 2 }
 }
-function shapeKey(shape) {
-  if (shape.kind === 'circle') return `c:${shape.x}:${shape.y}:${shape.r}`
-  return `b:${shape.x}:${shape.y}:${shape.w}:${shape.h}`
-}
 function findShape(maps, id) {
   for (const map of Object.values(maps)) {
     const row = map.triggers.find(t => t.id === id)
@@ -108,9 +104,43 @@ function findShape(maps, id) {
   }
   return null
 }
-function shapeContains(shape, px, py) {
-  if (shape.kind === 'circle') return Math.hypot(px - shape.x, py - shape.y) <= shape.r + 1
-  return px >= shape.x - 1 && py >= shape.y - 1 && px <= shape.x + shape.w + 1 && py <= shape.y + shape.h + 1
+async function assertHotspotCenters(page, maps, name) {
+  const info = await page.evaluate(() => {
+    const board = document.getElementById('artBoard').getBoundingClientRect()
+    const buttons = [...document.querySelectorAll('#hotspotLayer button')].map(b => b.dataset.triggerId)
+    return { board: { x: board.left, y: board.top, w: board.width, h: board.height }, buttons }
+  })
+  for (const id of info.buttons) {
+    const shape = findShape(maps, id)
+    if (!shape) throw new Error(`no shape for ${id}`)
+    const center = shapeCenter(shape)
+    const x = info.board.x + center.x / 1080 * info.board.w
+    const y = info.board.y + center.y / 1920 * info.board.h
+    const hit = await page.evaluate(({ x, y }) => {
+      const el = document.elementFromPoint(x, y)
+      return el?.closest?.('[data-trigger-id]')?.dataset?.triggerId ?? null
+    }, { x, y })
+    if (hit !== id) throw new Error(`${name}: center of ${id} hit ${hit} at ${x.toFixed(1)},${y.toFixed(1)}`)
+    if (id === 'TR_C01_03_BOWLS' || id === 'TR_C01_03_BOWL_WEAR') console.log('bowl center', name, id)
+  }
+}
+
+async function assertCalvesClear(page, name) {
+  const rows = await page.evaluate(() => {
+    const plate = document.querySelector('#dialog.c01 .plate')?.getBoundingClientRect()
+    const stageTop = document.getElementById('portraitStage')?.getBoundingClientRect().top ?? 0
+    if (!plate || plate.height < 2) return []
+    return [...document.querySelectorAll('.portrait.shown.cutout img')].map(img => {
+      const r = img.getBoundingClientRect()
+      const calf = r.bottom - r.height * 0.10
+      return { h: r.height, coverPastCalf: calf - plate.top, head: r.top, stageTop }
+    })
+  })
+  for (const row of rows) {
+    if (row.h < 8) continue
+    if (row.coverPastCalf > 6) throw new Error(`dialogue covers calves on ${name}: ${JSON.stringify(row)}`)
+    if (row.head < row.stageTop - 2) throw new Error(`portrait clipped on ${name}: ${JSON.stringify(row)}`)
+  }
 }
 
 async function assertChoices(page, name) {
@@ -148,48 +178,26 @@ async function assertChoices(page, name) {
   return texts
 }
 
-async function clickHotspotAtShape(page, maps, clicked) {
+async function clickHotspotAtShape(page, maps, clicked, name) {
   const info = await page.evaluate(() => {
     const board = document.getElementById('artBoard').getBoundingClientRect()
-    const buttons = [...document.querySelectorAll('#hotspotLayer button')].map(b => {
-      const r = b.getBoundingClientRect()
-      return { id: b.dataset.triggerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2 }
-    })
+    const buttons = [...document.querySelectorAll('#hotspotLayer button')].map(b => b.dataset.triggerId)
     return { board: { x: board.left, y: board.top, w: board.width, h: board.height }, buttons }
   })
   if (!info.buttons.length) return null
-  const pick = info.buttons.find(b => b.id !== 'TR_C01_01_EXIT' && b.id !== 'TR_C01_01_BACK') || info.buttons[0]
-  const shape = findShape(maps, pick.id)
-  if (!shape) throw new Error(`no shape for ${pick.id}`)
+  await assertHotspotCenters(page, maps, name)
+  const pick = info.buttons.find(id => id !== 'TR_C01_01_EXIT' && id !== 'TR_C01_01_BACK') || info.buttons[0]
+  const shape = findShape(maps, pick)
+  if (!shape) throw new Error(`no shape for ${pick}`)
   const center = shapeCenter(shape)
-  const siblings = info.buttons.filter(b => shapeKey(findShape(maps, b.id)) === shapeKey(shape))
-  let x = info.board.x + center.x / 1080 * info.board.w
-  let y = info.board.y + center.y / 1920 * info.board.h
-  let expectId = pick.id
-  const siblingIds = siblings.map(b => b.id)
-  const yanPair = siblingIds.includes('TR_C01_01_YAN2') && siblingIds.includes('CH_C01_01_YAN2_DEBT')
-  if (siblings.length > 1 && !yanPair) {
-    const px = ((pick.cx - info.board.x) / info.board.w) * 1080
-    const py = ((pick.cy - info.board.y) / info.board.h) * 1920
-    if (!shapeContains(shape, px, py)) throw new Error(`${pick.id} label is outside its shape`)
-    x = pick.cx
-    y = pick.cy
-  }
-  if (yanPair) expectId = 'TR_C01_01_YAN2'
-  const hit = await page.evaluate(({ x, y }) => {
-    const el = document.elementFromPoint(x, y)
-    return el?.closest?.('[data-trigger-id]')?.dataset?.triggerId ?? null
-  }, { x, y })
-  if (hit !== expectId) throw new Error(`shape click for ${expectId} hit ${hit} at ${x.toFixed(1)},${y.toFixed(1)}`)
-  if (expectId === 'TR_C01_01_PRICE' || expectId === 'TR_C01_01_YAN2') {
-    console.log('center hit', expectId, { x: x.toFixed(1), y: y.toFixed(1) })
-  }
+  const x = info.board.x + center.x / 1080 * info.board.w
+  const y = info.board.y + center.y / 1920 * info.board.h
   await page.mouse.click(x, y)
-  clicked.add(expectId)
-  return expectId
+  clicked.add(pick)
+  return pick
 }
 
-async function act(page, state, maps, clicked) {
+async function act(page, state, maps, clicked, name) {
   if (state.dialog) {
     const choice = page.locator('#dialog button', { hasText: '分期延后' })
     if (await choice.count()) { await choice.first().click(); return 'choice' }
@@ -209,7 +217,7 @@ async function act(page, state, maps, clicked) {
     return `op:${state.shortTitle}`
   }
   if (state.gate) { await page.locator('#gateEnter').click(); return 'gate' }
-  const hotId = await clickHotspotAtShape(page, maps, clicked)
+  const hotId = await clickHotspotAtShape(page, maps, clicked, name)
   if (hotId) return `hotspot:${hotId}`
   return 'idle'
 }
@@ -261,7 +269,7 @@ async function walk(page, name) {
       const gap = bodyGap(state.figs)
       const feet = state.figs.map(fig => Math.abs(fig.imgBottom - fig.stageBottom))
       if (state.textOwner !== 'dialog') throw new Error(`portrait covers dialogue on ${name}: ${state.textOwner}`)
-      if (feet.some(d => d > 2)) throw new Error(`feet floating on ${name}: ${JSON.stringify(feet)}`)
+      if (name !== '390x844' && feet.some(d => d > 2)) throw new Error(`feet floating on ${name}: ${JSON.stringify(feet)}`)
       if (state.figs.some(fig => fig.mode !== 'cutout')) throw new Error('portrait not in cutout mode')
       if (gap < 8) throw new Error(`portraits overlap on ${name}: gap ${gap.toFixed(1)}`)
       await snap(page, `portraits-${name}`)
@@ -270,7 +278,7 @@ async function walk(page, name) {
     if (state.figs.some(fig => fig.speaker === '？？？' && fig.active) && !seen.has('unknown')) {
       seen.add('unknown')
       const feet = Math.abs(state.figs.find(fig => fig.speaker === '？？？').imgBottom - state.figs.find(fig => fig.speaker === '？？？').stageBottom)
-      if (feet > 2) throw new Error(`unknown feet floating on ${name}`)
+      if (name !== '390x844' && feet > 2) throw new Error(`unknown feet floating on ${name}`)
       if (state.textOwner !== 'dialog') throw new Error(`unknown covers dialogue on ${name}`)
       await snap(page, `silhouette-${name}`)
     }
@@ -318,6 +326,10 @@ async function walk(page, name) {
       if (Math.abs(ratio - 9 / 16) > 0.02) throw new Error(`frame ratio ${ratio} on ${name}`)
       if (name === '1440x900' && app.w > 700) throw new Error('desktop frame is not letterboxed')
       if (name === '390x844' && app.w > 390) throw new Error('phone frame wider than the viewport')
+      const dlgScale = await page.evaluate(() => Number(getComputedStyle(document.getElementById('app')).getPropertyValue('--dlg-scale')))
+      if (name === '390x844') {
+        if (!(dlgScale > 0 && dlgScale < 0.9)) throw new Error(`expected a narrow dialogue scale on ${name}, got ${dlgScale}`)
+      } else if (Math.abs(dlgScale - 1) > 0.001) throw new Error(`dialogue scale changed on ${name}: ${dlgScale}`)
       for (const label of ['收下杉木', '分期延后', '只留张欠条']) {
         if (!choicesSeen.has(label)) throw new Error(`choice ${label} was not checked on ${name}`)
       }
@@ -332,10 +344,15 @@ async function walk(page, name) {
       console.log('finished', name, { errors: errors.length, app, choices: [...choicesSeen], clicks: clicked.size })
       return
     }
+    if (name === '390x844' && state.dialog && !state.cutaway && state.figs.length) await assertCalvesClear(page, name)
     if (state.dialog && await page.locator('#dialog button').count()) {
       for (const text of await assertChoices(page, name)) choicesSeen.add(text)
+      if (name === '390x844' && !seen.has('choice-shot')) {
+        seen.add('choice-shot')
+        await snap(page, `choices-${name}`)
+      }
     }
-    const what = await act(page, state, maps, clicked)
+    const what = await act(page, state, maps, clicked, name)
     if (what === 'idle') throw new Error(`nothing to do on ${name}: ${JSON.stringify(state)}`)
     await page.waitForTimeout(40)
   }
@@ -343,7 +360,7 @@ async function walk(page, name) {
 }
 
 await mkdir(out, { recursive: true })
-const browser = await chromium.launch({ headless: true })
+const browser = await chromium.launch({ headless: true, ...(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {}) })
 try {
   for (const vp of viewports) {
     const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 })

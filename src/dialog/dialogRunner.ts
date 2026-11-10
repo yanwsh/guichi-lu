@@ -40,9 +40,8 @@ export class DialogRunner {
         this.dim?.classList.remove('hidden')
         if (cutawayOn && stills) this.showStill(stills, i)
         else this.hideStill()
-        if (c01 && !cutawayOn) this.portraits.show(line?.speaker ?? '')
-        else if (cutawayOn) this.portraits.clear()
-        else this.showLegacyPortrait(line?.portrait_key)
+        if (cutawayOn) this.portraits.clear()
+        else if (!c01) this.showLegacyPortrait(line?.portrait_key)
         const plate = document.createElement('div')
         plate.className = 'plate'
         const sp = document.createElement('div')
@@ -77,6 +76,7 @@ export class DialogRunner {
           this.root.onclick = e => { e.stopPropagation(); go() }
           this.cutaway.root.onclick = cutawayOn ? e => { e.stopPropagation(); go() } : null
         }
+        if (c01 && !cutawayOn) this.portraits.show(line?.speaker ?? '')
       }
       show()
     })

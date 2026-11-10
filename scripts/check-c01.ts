@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import type { HotspotMap, HotspotTrigger } from '../src/data/hotspotTypes.ts'
+import type { HotspotMap, HotspotShape, HotspotTrigger } from '../src/data/hotspotTypes.ts'
 import { applyShortOp, freshShortOp, shortOpForTrigger } from '../src/shortop/shortOps.ts'
 import {
   YAN2_DEBT,
@@ -246,4 +246,139 @@ if (byDlg.get('DLG_P01_01')?.lines[0].text !== '（骨架占位）') fail('prolo
 const antiknot = street.triggers.find(t => t.id === 'MG_C01_01_ANTIKNOT')
 if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 318 || antiknot.shape.y !== 392 || antiknot.shape.w !== 118 || antiknot.shape.h !== 392) fail('antiknot box')
 
-console.log('c01 playable checks ok', { beat: openBeat(flags), debt: flags.c01_yan2_debt })
+for (const id of ['C01_SHOP', 'C01_STREET']) {
+  const pub = readFileSync(`public/config/walkmaps/${id}.json`, 'utf8')
+  const sample = readFileSync(`Config/Samples/walkmaps/${id}.json`, 'utf8')
+  if (pub !== sample) fail(`${id} walkmap copies diverged`)
+}
+const wear = shop.triggers.find(t => t.id === 'TR_C01_03_BOWL_WEAR')
+const bowls = shop.triggers.find(t => t.id === 'TR_C01_03_BOWLS')
+if (!wear?.shape || wear.shape.kind !== 'circle' || wear.shape.x !== 424 || wear.shape.y !== 1190 || wear.shape.r !== 52) fail('bowl wear shape')
+if (wear.zone_hint !== '后排中空碗（端碗看碗底）') fail('bowl wear hint')
+if (!bowls?.shape || bowls.shape.kind !== 'circle' || bowls.shape.x !== 424 || bowls.shape.y !== 1190 || bowls.shape.r !== 52) fail('bowls shape moved')
+if (wear.req?.flags_all?.join() !== 'c01_empty_bowl_seen') fail('bowl wear req')
+if (wear.result?.dialogue_id !== 'DLG_C01C_03' || wear.result?.set_flags?.join() !== 'c01_bowl_wear_seen') fail('bowl wear result')
+if (bowls.once !== true || wear.once !== true) fail('bowl hotspots must retract after one click')
+
+function shapeBounds(shape: HotspotShape) {
+  if (shape.kind === 'circle') return { x: shape.x - shape.r, y: shape.y - shape.r, w: shape.r * 2, h: shape.r * 2 }
+  return { x: shape.x, y: shape.y, w: shape.w, h: shape.h }
+}
+function shapeCenter(shape: HotspotShape) {
+  if (shape.kind === 'circle') return { x: shape.x, y: shape.y }
+  return { x: shape.x + shape.w / 2, y: shape.y + shape.h / 2 }
+}
+function boundsContain(box: { x: number; y: number; w: number; h: number }, x: number, y: number) {
+  return x >= box.x && y >= box.y && x < box.x + box.w && y < box.y + box.h
+}
+function shapeKeyOf(shape: HotspotShape) {
+  if (shape.kind === 'circle') return `c:${shape.x}:${shape.y}:${shape.r}`
+  return `b:${shape.x}:${shape.y}:${shape.w}:${shape.h}`
+}
+/** Same order as HotspotBoard: later shapes paint on top. A shared shape cannot have two centers. */
+function topHit(chips: { trigger: HotspotTrigger }[], x: number, y: number) {
+  const groups: HotspotTrigger[][] = []
+  const at = new Map<string, number>()
+  for (const chip of chips) {
+    const shape = chip.trigger.shape
+    if (!shape) continue
+    const key = shapeKeyOf(shape)
+    const index = at.get(key)
+    if (index === undefined) {
+      at.set(key, groups.length)
+      groups.push([chip.trigger])
+    } else groups[index].push(chip.trigger)
+  }
+  let hit: string | null = null
+  for (const group of groups) {
+    const shape = group[0].shape
+    if (!shape || !boundsContain(shapeBounds(shape), x, y)) continue
+    if (group.length > 1) fail(`co-visible hotspots share one shape: ${group.map(t => t.id).join('+')}`)
+    hit = group[0].id
+  }
+  return hit
+}
+
+type Play = { scene: string; flags: Record<string, number>; triggered: string[] }
+const playMaps: Record<string, HotspotMap> = { CH1_GATE: gate, C01_SHOP: shop, C01_STREET: street }
+function clonePlay(p: Play): Play {
+  return { scene: p.scene, flags: { ...p.flags }, triggered: [...p.triggered] }
+}
+function playKey(p: Play) {
+  const on = Object.entries(p.flags).filter(([, v]) => v).sort(([a], [b]) => a < b ? -1 : 1).map(([k, v]) => `${k}=${v}`).join(',')
+  return `${p.scene}|${on}|${[...p.triggered].sort().join(',')}`
+}
+function applyTrigger(p: Play, t: HotspotTrigger): Play {
+  const next = clonePlay(p)
+  applySetFlags(next.flags, t.result?.set_flags)
+  if (t.once !== false && !next.triggered.includes(t.id)) next.triggered.push(t.id)
+  const dest = t.result?.goto_scene
+  if (dest && allowedHop(next.scene, dest)) next.scene = dest
+  return next
+}
+function present(p: Play): Play {
+  const map = playMaps[p.scene]
+  if (!map || p.scene === 'CH1_GATE') return settle(p)
+  const enter = nextEnter(map.triggers, p.flags, p.triggered, p.scene)
+  if (!enter) return settle(p)
+  const next = applyTrigger(p, enter)
+  if (next.scene !== p.scene) return present(next)
+  return settle(next)
+}
+function settle(p: Play): Play {
+  let cur = p
+  for (let i = 0; i < 12; i++) {
+    const map = playMaps[cur.scene]
+    if (!map) return cur
+    const auto = nextAuto(map.triggers, cur.flags, cur.triggered, cur.scene)
+    if (!auto) return cur
+    const before = cur.scene
+    cur = applyTrigger(cur, auto)
+    if (cur.scene !== before) return present(cur)
+  }
+  fail('auto chain did not settle')
+}
+function advance(p: Play, t: HotspotTrigger): Play {
+  const before = p.scene
+  const next = applyTrigger(p, t)
+  if (next.scene !== before) return present(next)
+  return settle(next)
+}
+
+const queue: Play[] = [present(applyTrigger({ scene: 'CH1_GATE', flags: flagsOf(), triggered: [] }, trig(gate, 'TR_CH1_GATE_START')))]
+const seenStates = new Set<string>()
+let sawBowls = false
+let sawWear = false
+let states = 0
+while (queue.length) {
+  const p = queue.pop()!
+  const key = playKey(p)
+  if (seenStates.has(key)) continue
+  seenStates.add(key)
+  states += 1
+  if (states > 8000) fail('hotspot state space exploded')
+  const map = playMaps[p.scene]
+  if (!map) continue
+  const visible = visibleHotspots(map, p.flags, p.triggered)
+  const ids = visible.map(chip => chip.trigger.id)
+  if (ids.includes('TR_C01_03_BOWLS') && ids.includes('TR_C01_03_BOWL_WEAR')) fail('bowls and wear are both clickable')
+  if (ids.includes('TR_C01_03_BOWLS')) {
+    sawBowls = true
+    if (topHit(visible, 424, 1190) !== 'TR_C01_03_BOWLS') fail(`bowls center hit ${topHit(visible, 424, 1190)}`)
+  }
+  if (ids.includes('TR_C01_03_BOWL_WEAR')) {
+    sawWear = true
+    if (topHit(visible, 424, 1190) !== 'TR_C01_03_BOWL_WEAR') fail(`wear center hit ${topHit(visible, 424, 1190)}`)
+  }
+  for (const chip of visible) {
+    const shape = chip.trigger.shape
+    if (!shape) fail(`${chip.trigger.id} visible without a shape`)
+    const c = shapeCenter(shape)
+    const hit = topHit(visible, c.x, c.y)
+    if (hit !== chip.trigger.id) fail(`${chip.trigger.id} center hit ${hit} among ${ids.join(',')}`)
+  }
+  for (const chip of visible) queue.push(advance(p, chip.trigger))
+}
+if (!sawBowls || !sawWear) fail(`bowl phases missing bowls=${sawBowls} wear=${sawWear}`)
+
+console.log('c01 playable checks ok', { beat: openBeat(flags), debt: flags.c01_yan2_debt, states, sawBowls, sawWear })

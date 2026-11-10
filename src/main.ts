@@ -78,6 +78,11 @@ const $ = (id: string) => document.getElementById(id)!;
 const show = (id: string, on: boolean) => $(id).classList.toggle('hidden', !on);
 const presenter = new ScenePresenter(scene, $('interacts'));
 const portraits = new PortraitStage($('portraitStage'));
+portraits.onPlaced = () => liftPortraits();
+$('portraitStage').addEventListener('load', event => {
+  if (event.target instanceof HTMLImageElement) liftPortraits();
+}, true);
+new ResizeObserver(() => liftPortraits()).observe($('dialog'));
 const dialog = new DialogRunner(
   $('dialog'),
   $('talkPortrait') as HTMLImageElement,
@@ -122,6 +127,42 @@ function clearDialogInline() {
   el.style.height = '';
   el.style.right = '';
 }
+/** 1 on 9:16 frames. Narrower phones shrink vh-sized dialogue so it matches the frame. */
+function dialogueScale(frameH: number) {
+  const ratio = frameH / ((window.innerHeight || frameH) * 0.96);
+  if (!Number.isFinite(ratio) || ratio > 0.97) return 1;
+  return Math.max(0.72, ratio);
+}
+/** Boots may sit in the plate. Calves (above the bottom 8%) stay clear on a narrow frame. */
+const BOOT_FRAC = 0.08;
+function liftPortraits() {
+  const stage = $('portraitStage');
+  const figs = [...stage.querySelectorAll<HTMLElement>('.portrait.cutout')];
+  const narrow = app.classList.contains('narrow-dlg');
+  const dialogOpen = !$('dialog').classList.contains('hidden') && $('dialog').classList.contains('c01');
+  const plate = dialogOpen ? document.querySelector('#dialog.c01 .plate') : null;
+  if (!narrow || !plate) {
+    for (const fig of figs) {
+      fig.style.bottom = '0px';
+      fig.style.transform = '';
+    }
+    return;
+  }
+  const stageR = stage.getBoundingClientRect();
+  const plateR = plate.getBoundingClientRect();
+  const gap = stageR.bottom - plateR.top;
+  const available = Math.max(0, plateR.top - stageR.top);
+  for (const fig of figs) {
+    const h = fig.offsetHeight;
+    if (h < 8) continue;
+    const body = h * (1 - BOOT_FRAC);
+    const scale = body > available - 4 ? Math.max(0.72, (available - 4) / body) : 1;
+    const tuck = h * BOOT_FRAC * scale;
+    fig.style.transformOrigin = 'bottom center';
+    fig.style.transform = scale < 0.995 ? `scale(${scale})` : '';
+    fig.style.bottom = `${Math.max(0, gap - tuck)}px`;
+  }
+}
 function layoutArt() {
   const fw = app.clientWidth;
   const fh = app.clientHeight;
@@ -133,6 +174,9 @@ function layoutArt() {
   app.style.setProperty('--art-w', `${rect.w}px`);
   app.style.setProperty('--art-h', `${rect.h}px`);
   app.style.setProperty('--frame-h', `${fh}px`);
+  const scale = dialogueScale(fh);
+  app.style.setProperty('--dlg-scale', scale.toFixed(4));
+  app.classList.toggle('narrow-dlg', scale < 1);
   portraits.layout(rect.w);
 }
 function showBoard(path: string) {
@@ -235,7 +279,7 @@ function setBattleVisual(on: boolean) {
 }
 function battleHud() { const b = flow.state.battle!; $('hudText').textContent = `战斗 · 回合 ${b.turn} · 我方 ${b.party_hp} / 妖物 ${b.enemy_hp}`; }
 const hooks = {
-  onSceneReady: (name: string, hasNext: boolean) => { $('hudText').textContent = `${name} · 灰盒`; show('next', hasNext); },
+  onSceneReady: (name: string, hasNext: boolean) => { $('hudText').textContent = name; show('next', hasNext); },
   onBattleStart: () => { setBattleVisual(true); $('battleLog').textContent = '雾纹山魈现身！'; battleHud(); },
   onBattleEnd: () => setBattleVisual(false),
   onLocationCard: (key: string) => new Promise<void>(res => {
