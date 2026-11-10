@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { loadGameDb, loadHotspotMap, loadWalkMap, walkArtBase } from './data/loader';
+import { loadC01Visual, loadGameDb, loadHotspotMap, loadWalkMap, walkArtBase } from './data/loader';
 import { newGame, loadGame, clearSave, saveGame, type GameState } from './save/gameState';
 import { ScenePresenter } from './scene/scenePresenter';
 import { DialogRunner } from './dialog/dialogRunner';
@@ -8,19 +8,21 @@ import { attackTurn } from './battle/battleLogic';
 import { nodeStates, enterNode, locationTitle } from './map/chapterMap';
 import { WalkScene } from './walk/walkScene';
 import { HotspotBoard } from './scene/hotspotBoard';
+import { PortraitStage } from './scene/portraitStage';
 import { ShortOpPanel } from './shortop/shortOpPanel';
 import type { ShortOpDef } from './shortop/shortOps';
 import { bannerText, isHotspotScene, nextAuto, nextEnter, visibleHotspots } from './walk/c01Flow';
+import { assetUrl, containRect, devEntriesOn, resolveArtRef, type C01Visual } from './scene/c01Art';
 import type { HotspotMap, HotspotTrigger } from './data/hotspotTypes';
 import type { GameDb, MapNodeRow } from './data/types';
 function toast(t: string) { const el = $('locCard'); el.textContent = t; el.style.opacity = '1'; setTimeout(() => { el.style.opacity = '0'; }, 900); }
 let gdb: GameDb;
+let visual: C01Visual | null = null;
 const app = document.getElementById('app')!;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 app.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-// 渐变背景
 const c = document.createElement('canvas'); c.width = 2; c.height = 256;
 const g = c.getContext('2d')!; const gr = g.createLinearGradient(0, 0, 0, 256);
 gr.addColorStop(0, '#9fc3d6'); gr.addColorStop(.6, '#e9dcc0'); gr.addColorStop(1, '#6d7f6a');
@@ -39,6 +41,7 @@ function label(text: string) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv) }));
   s.scale.set(2, .5, 1); return s;
 }
+const legacyActors: { img: string; mat: THREE.MeshBasicMaterial }[] = [];
 const chars = [
   { name: '沈归迟', img: 'shen-guichi', color: 0x3a5a6a, x: -2.0, h: 3.2 },
   { name: '陆清歌', img: 'lu-qingge', color: 0xd8c8e8, x: 0, h: 3.0 },
@@ -46,56 +49,126 @@ const chars = [
 ].map(d => {
   const grp = new THREE.Group();
   const mat = new THREE.MeshBasicMaterial({ color: d.color, transparent: true });
-  loader.load(`${import.meta.env.BASE_URL}portraits/anime-v3-${d.img}.jpg`, t => {
-    t.colorSpace = THREE.SRGBColorSpace; mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
-  });
+  legacyActors.push({ img: d.img, mat });
   const p = new THREE.Mesh(new THREE.PlaneGeometry(d.h * 0.6, d.h), mat);
   p.position.y = d.h / 2; grp.add(p);
   const l = label(d.name); l.position.y = d.h + .4; grp.add(l);
   grp.position.x = d.x; scene.add(grp); return grp;
 });
-const enemyH = 2.4; // 雾纹山魈 ≈ 沈归迟 75%
+const enemyH = 2.4;
 const enemyMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
-loader.load(`${import.meta.env.BASE_URL}enemies/EN_MOB_MELEE.png`, t => {
-  t.colorSpace = THREE.SRGBColorSpace; enemyMat.map = t; enemyMat.needsUpdate = true;
-});
 const enemy = new THREE.Mesh(new THREE.PlaneGeometry(enemyH * 0.72, enemyH), enemyMat);
 enemy.position.set(0, enemyH / 2 + 0.15, 3); enemy.visible = false;
 const eLight = new THREE.PointLight(0x88aacc, 24, 22); eLight.position.set(0, 4, 6); scene.add(eLight); eLight.visible = false; scene.add(enemy);
+let legacyLoaded = false;
+function ensureLegacy() {
+  if (legacyLoaded) return;
+  legacyLoaded = true;
+  for (const actor of legacyActors) {
+    loader.load(`${import.meta.env.BASE_URL}portraits/anime-v3-${actor.img}.jpg`, t => {
+      t.colorSpace = THREE.SRGBColorSpace; actor.mat.map = t; actor.mat.color.set(0xffffff); actor.mat.needsUpdate = true;
+    });
+  }
+  loader.load(`${import.meta.env.BASE_URL}enemies/EN_MOB_MELEE.png`, t => {
+    t.colorSpace = THREE.SRGBColorSpace; enemyMat.map = t; enemyMat.needsUpdate = true;
+  });
+}
 let mode: 'title' | 'explore' | 'battle' = 'title';
 const $ = (id: string) => document.getElementById(id)!;
 const show = (id: string, on: boolean) => $(id).classList.toggle('hidden', !on);
 const presenter = new ScenePresenter(scene, $('interacts'));
-const dialog = new DialogRunner($('dialog'), $('talkPortrait') as HTMLImageElement, $('dialogDim'));
+const portraits = new PortraitStage($('portraitStage'));
+const dialog = new DialogRunner(
+  $('dialog'),
+  $('talkPortrait') as HTMLImageElement,
+  $('dialogDim'),
+  portraits,
+  { root: $('cutaway'), img: $('cutawayStill') as HTMLImageElement },
+);
 const walk = new WalkScene();
 const hotspotMaps = new Map<string, HotspotMap>();
 const hotspotBoard = new HotspotBoard($('hotspotLayer'));
 const shortOpPanel = new ShortOpPanel($('shortOp'));
+const sceneBg = $('sceneBg') as HTMLImageElement;
 let hotspotOn = false;
 let hotspotBusy = false;
 let promptLabel: string | null = null;
 let flow: FlowController;
-let sceneBg: THREE.Color | THREE.Texture | null = null;
+let sceneBg3: THREE.Color | THREE.Texture | null = null;
+let townReady: Promise<void> | null = null;
+function toastSafe(t: string) { toast(t); }
+function ensureTown() {
+  if (walk.ready) return Promise.resolve();
+  if (townReady) return townReady;
+  townReady = (async () => {
+    try {
+      const wm = await loadWalkMap('SC_03_TOWN');
+      if (wm) { await walk.load(wm, walkArtBase('SC_03_TOWN')); layoutSafe(); }
+    } catch (err) { console.error(err); }
+  })();
+  return townReady;
+}
 function setEndChrome(on: boolean) {
   $('hud').style.visibility = on ? 'hidden' : '';
   $('zoneLabel').style.visibility = on ? 'hidden' : '';
   $('mapBtn').style.visibility = on ? 'hidden' : '';
 }
+function clearDialogInline() {
+  const el = $('dialog');
+  el.style.bottom = '';
+  el.style.left = '';
+  el.style.top = '';
+  el.style.width = '';
+  el.style.height = '';
+  el.style.right = '';
+}
+function layoutArt() {
+  const fw = app.clientWidth;
+  const fh = app.clientHeight;
+  const iw = sceneBg.naturalWidth || visual?.canvas.w || 1080;
+  const ih = sceneBg.naturalHeight || visual?.canvas.h || 1920;
+  const rect = containRect(fw, fh, iw, ih);
+  app.style.setProperty('--art-x', `${rect.x}px`);
+  app.style.setProperty('--art-y', `${rect.y}px`);
+  app.style.setProperty('--art-w', `${rect.w}px`);
+  app.style.setProperty('--art-h', `${rect.h}px`);
+  app.style.setProperty('--frame-h', `${fh}px`);
+  portraits.layout(rect.w);
+}
+function showBoard(path: string) {
+  const url = assetUrl(path, import.meta.env.BASE_URL);
+  const board = $('artBoard');
+  board.classList.remove('hidden');
+  board.dataset.art = path;
+  if (sceneBg.getAttribute('src') !== url) sceneBg.src = url;
+  layoutArt();
+}
+function applyArt(focus?: HotspotTrigger | null) {
+  if (!flow || !visual || !isHotspotScene(flow.state.scene_id)) return;
+  if (flow.state.scene_id === 'CH1_GATE') { showBoard(visual.chapter_card.src); return; }
+  const map = hotspotMaps.get(flow.state.scene_id);
+  if (!map) return;
+  const ref = resolveArtRef(map, flow.state.flags, flow.state.triggered_ids ?? [], focus);
+  const src = ref ? visual.backgrounds[ref] : null;
+  if (src) showBoard(src);
+}
 function syncHotspotChrome() {
   const talking = !$('dialog').classList.contains('hidden') || !$('shortOp').classList.contains('hidden') || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden');
   show('hotspotLayer', hotspotOn);
-  show('c01Banner', hotspotOn);
+  show('c01Banner', hotspotOn && flow?.state.scene_id !== 'CH1_GATE');
   show('gateCard', hotspotOn && flow?.state.scene_id === 'CH1_GATE' && !talking);
   hotspotBoard.setLocked(talking || hotspotBusy);
   show('dbgBattle', !hotspotOn && mode !== 'battle');
   show('mapBtn', !hotspotOn && mode !== 'battle');
+  renderer.domElement.style.visibility = hotspotOn ? 'hidden' : '';
   renderer.domElement.style.pointerEvents = hotspotOn ? 'none' : '';
-  if (hotspotOn) { show('joystick', false); show('walkInteract', false); show('zoneLabel', false); }
+  if (hotspotOn) { show('joystick', false); show('walkInteract', false); show('zoneLabel', false); clearDialogInline(); }
 }
 function refreshHotspots() {
   if (!hotspotOn || !flow) return;
   const map = hotspotMaps.get(flow.state.scene_id);
   $('c01Banner').textContent = bannerText(flow.state.flags);
+  applyArt(null);
   if (!map) { hotspotBoard.clear(); return; }
   hotspotBoard.render(visibleHotspots(map, flow.state.flags, flow.state.triggered_ids ?? []));
 }
@@ -112,6 +185,8 @@ async function presentHotspot(sceneId: string) {
   hotspotOn = true;
   const map = hotspotMaps.get(sceneId) ?? null;
   hotspotBoard.setMap(map);
+  applyArt(null);
+  layoutArt();
   syncHotspotChrome();
   if (sceneId === 'CH1_GATE') { hotspotBoard.clear(); $('c01Banner').textContent = '第一章 · 纸灯里有个人'; return; }
   const enter = map && nextEnter(map.triggers, flow.state.flags, flow.state.triggered_ids ?? [], sceneId);
@@ -153,7 +228,7 @@ function setBattleVisual(on: boolean) {
   } else {
     enemy.visible = on; eLight.visible = on;
     renderer.domElement.style.filter = on ? 'brightness(.5) saturate(.7)' : '';
-    if (!on && sceneBg) presenter.setBackground(sceneBg); else if (on) sceneBg = scene.background as THREE.Texture;
+    if (!on && sceneBg3) presenter.setBackground(sceneBg3); else if (on) sceneBg3 = scene.background as THREE.Texture;
   }
   show('attack', on); show('retreat', on); show('battleLog', on); show('mapBtn', !on); show('interacts', !on && !walking); show('dbgBattle', !on); if (on) show('next', false);
   syncWalkChrome();
@@ -169,7 +244,7 @@ const hooks = {
     setTimeout(() => { el.style.opacity = '0'; }, 1100); setTimeout(res, 1500);
   }),
   onReward: (n: MapNodeRow) => new Promise<void>(res => {
-    if (flow.state.flags['map_reward_n5']) return res(); // 只给一次
+    if (flow.state.flags['map_reward_n5']) return res();
     $('rewardBody').textContent = n.reward_tip ?? '雾纹残晶 ×1'; show('reward', true);
     $('rewardOk').onclick = () => { flow.state.flags['map_reward_n5'] = 1; show('reward', false); res(); };
   }),
@@ -180,10 +255,12 @@ const hooks = {
     $('endClose').onclick = dismiss;
     $('endContinue').onclick = () => { dismiss(); if (n.hook_scene_id) void flow.goto(n.hook_scene_id, `FLOW_${n.hook_scene_id}`, { hook: true }); };
   },
-  onWalkMode: (on: boolean) => { if (on) { hotspotOn = false; const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); syncHotspotChrome(); },
-  onToast: (t: string) => toast(t),
+  onWalkMode: (on: boolean) => { if (on) { hotspotOn = false; $('artBoard').classList.add('hidden'); const r = app.getBoundingClientRect(); walk.resize(r.width, r.height); } syncWalkChrome(); syncHotspotChrome(); },
+  onToast: (t: string) => toastSafe(t),
   onHotspotScene: (sceneId: string) => presentHotspot(sceneId),
   onShortOp: (op: ShortOpDef) => shortOpPanel.run(op),
+  onHotspotFocus: (trigger: HotspotTrigger) => applyArt(trigger),
+  cutawayStills: (id: string) => visual?.cutaways[id]?.stills ?? null,
 };
 function openMap() {
   if (mode !== 'explore' || !$('dialog').classList.contains('hidden')) return;
@@ -196,7 +273,7 @@ function openMap() {
     const name = st[n.map_node] === 'locked' ? '？？？' : (labels[n.map_node] || n.map_title);
     b.innerHTML = `${n.map_node} · ${name}<small>${n.tags.join(' / ')}${st[n.map_node] === 'current' ? ' · 当前' : ''}</small>`;
     b.disabled = st[n.map_node] === 'locked';
-    b.onclick = () => { show('map', false); enterNode(n, flow, toast); };
+    b.onclick = () => { show('map', false); enterNode(n, flow, toastSafe); };
     root.append(b);
   }
   show('map', true);
@@ -208,8 +285,9 @@ $('attack').onclick = () => {
   if (r.result) setTimeout(() => { flow.endBattle(r.result!); }, 700);
 };
 $('retreat').onclick = () => flow.endBattle('retreat');
-$('dbgBattle').onclick = () => flow.beginBattle('ENC_TUTORIAL_01');
+$('dbgBattle').onclick = () => { ensureLegacy(); flow.beginBattle('ENC_TUTORIAL_01'); };
 function layoutSafe() {
+  if (hotspotOn) { layoutArt(); return; }
   const ui = walk.safeUi(); const canvas = walk.canvasSize(); if (!ui || !canvas) return;
   const place = (el: HTMLElement, box: { x: number; y: number; w: number; h: number }) => {
     el.style.left = `${box.x / canvas.w * 100}%`; el.style.top = `${box.y / canvas.h * 100}%`;
@@ -238,18 +316,23 @@ renderer.domElement.addEventListener('pointerdown', e => {
   if (!walk.isActive() || mode !== 'explore') return;
   walk.pointer(e.clientX, e.clientY, renderer.domElement.getBoundingClientRect());
 });
+sceneBg.addEventListener('load', () => { if (hotspotOn) layoutArt(); });
 loadGameDb().then(async db => {
   gdb = db;
-  try {
-    const wm = await loadWalkMap('SC_03_TOWN');
-    if (wm) { await walk.load(wm, walkArtBase('SC_03_TOWN')); layoutSafe(); }
-  } catch (err) { console.error(err); }
-  try {
-    for (const id of ['CH1_GATE', 'C01_SHOP', 'C01_STREET']) {
-      const map = await loadHotspotMap(id);
-      if (map) hotspotMaps.set(id, map);
-    }
-  } catch (err) { console.error(err); }
+  visual = await loadC01Visual();
+  const dev = devEntriesOn(visual.dev_entries, location.search);
+  document.body.classList.toggle('dev', dev);
+  portraits.setVisual(visual, import.meta.env.BASE_URL);
+  dialog.setAssetBase(import.meta.env.BASE_URL);
+  $('gateCard').classList.add('has-art');
+  app.style.setProperty('--sub-y', String(visual.subtitle_y));
+  app.style.setProperty('--canvas-h', String(visual.canvas.h));
+  app.style.setProperty('--title-y', String(visual.chapter_card.title_y));
+  app.style.setProperty('--title-h', String(visual.chapter_card.title_h));
+  for (const id of ['CH1_GATE', 'C01_SHOP', 'C01_STREET']) {
+    const map = await loadHotspotMap(id);
+    if (map) hotspotMaps.set(id, map);
+  }
   const saved = loadGame(); show('continue', !!saved);
   const begin = (s: GameState) => {
     mode = 'explore'; show('title', false); show('hud', true); show('mapBtn', !isHotspotScene(s.scene_id));
@@ -259,19 +342,20 @@ loadGameDb().then(async db => {
       triggered: () => flow.state.triggered_ids ?? [],
       blocked: () => mode === 'battle' || !$('dialog').classList.contains('hidden') || !$('map').classList.contains('hidden') || !$('reward').classList.contains('hidden') || !$('endCard').classList.contains('hidden'),
       onTrigger: t => flow.handleWalkTrigger(t),
-      onToast: toast,
-      onZone: (label, objective) => { $('zoneName').textContent = label; $('zoneObj').textContent = objective; },
-      onPrompt: label => { promptLabel = label; syncWalkChrome(); },
+      onToast: toastSafe,
+      onZone: (labelText, objective) => { $('zoneName').textContent = labelText; $('zoneObj').textContent = objective; },
+      onPrompt: labelText => { promptLabel = labelText; syncWalkChrome(); },
       savePos: (x, y) => { if (flow.state.battle) return; flow.state.walk_pos = { scene_id: 'SC_03_TOWN', x, y }; saveGame(flow.state); },
     });
     flow.attachWalk(walk.ready ? walk : null);
     if (s.battle) { flow.state.battle = undefined; }
     flow.start();
   };
-  $('enter').onclick = () => { clearSave(); begin(newGame(db.flags)); };
-  $('continue').onclick = () => begin(saved!);
+  const beginLegacy = async (s: GameState) => { ensureLegacy(); await ensureTown(); begin(s); };
+  $('enter').onclick = () => { clearSave(); void beginLegacy(newGame(db.flags)); };
+  $('continue').onclick = () => { const s = saved!; if (isHotspotScene(s.scene_id)) begin(s); else void beginLegacy(s); };
   $('enterTown').onclick = () => {
-    clearSave(); const s = newGame(db.flags); s.scene_id = 'SC_03_TOWN'; s.flow_node_id = 'FLOW_SC_03_TOWN'; begin(s);
+    clearSave(); const s = newGame(db.flags); s.scene_id = 'SC_03_TOWN'; s.flow_node_id = 'FLOW_SC_03_TOWN'; void beginLegacy(s);
   };
   $('enterC01').onclick = () => {
     clearSave(); const s = newGame(db.flags); s.scene_id = 'CH1_GATE'; s.flow_node_id = 'FLOW_CH1_GATE'; begin(s);
@@ -282,7 +366,7 @@ loadGameDb().then(async db => {
     if (start) void activateHotspot(start);
   };
 }).catch(e => { $('hudText').textContent = String(e); console.error(e); });
-function resize() { const r = app.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); walk.resize(r.width, r.height); }
+function resize() { const r = app.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); walk.resize(r.width, r.height); if (hotspotOn) layoutArt(); }
 addEventListener('resize', resize); resize();
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
@@ -290,22 +374,18 @@ renderer.setAnimationLoop(() => {
   const t = clock.elapsedTime;
   if (hotspotOn && mode !== 'title') {
     syncHotspotChrome();
-    ground.visible = false;
-    chars.forEach(c => { c.visible = false; });
-    enemy.visible = false;
-    renderer.render(scene, camera);
     return;
   }
   ground.visible = true;
   if (!hotspotOn) { show('hotspotLayer', false); show('gateCard', false); show('c01Banner', false); }
   if (walk.isActive() && mode !== 'title') { walk.update(dt); syncWalkChrome(); renderer.render(walk.scene, walk.camera); return; }
-  chars.forEach((c, i) => {
-    c.visible = mode !== 'title';
-    c.position.y = Math.sin(t * 2 + i) * .05;
+  chars.forEach((ch, i) => {
+    ch.visible = mode !== 'title';
+    ch.position.y = Math.sin(t * 2 + i) * .05;
     const tx = mode === 'battle' ? [-2.6, -100, 2.6][i] : [-2.0, 0, 2.0][i];
-    c.position.x += (tx === -100 ? 0 : tx - c.position.x) * .15;
-    if (i === 1) c.visible = mode === 'explore';
-    c.scale.setScalar(mode === 'battle' ? .6 : 1);
+    ch.position.x += (tx === -100 ? 0 : tx - ch.position.x) * .15;
+    if (i === 1) ch.visible = mode === 'explore';
+    ch.scale.setScalar(mode === 'battle' ? .6 : 1);
   });
   if (mode === 'title') camera.position.x = Math.sin(t * .3) * .8;
   else if (mode === 'explore') camera.position.x *= .95;

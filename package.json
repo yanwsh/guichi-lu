@@ -1,1 +1,23 @@
-{"name":"guichi-lu","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"vite","build":"tsc && vite build","preview":"vite preview"},"dependencies":{"three":"^0.187.0"},"devDependencies":{"@types/three":"^0.187.0","typescript":"^7.0.2","vite":"^8.3.5"}}
+{
+  "name": "guichi-lu",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && npm run check && npm run check-c01-assets",
+    "preview": "vite preview",
+    "check-c01": "node --experimental-strip-types scripts/check-c01.ts",
+    "check-walk": "node --experimental-strip-types scripts/check-walk.ts",
+    "check-c01-assets": "node --experimental-strip-types scripts/check-c01-assets.ts",
+    "check": "npm run check-c01 && npm run check-walk"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.187.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

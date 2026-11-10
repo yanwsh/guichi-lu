@@ -19,10 +19,13 @@ export interface HotspotTrigger {
   req?: { flags_all?: string[] }
   once?: boolean
   result?: HotspotResult
+  /** Design path. The runtime maps it through c01_visual.json; the pixels stay in this file. */
+  art_ref?: string | null
 }
 
 export interface HotspotMap {
   host_scene_id: string
   canvas: { w: number; h: number }
   triggers: HotspotTrigger[]
+  art_ref?: string | null
 }

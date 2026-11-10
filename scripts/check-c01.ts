@@ -150,6 +150,90 @@ mustHidden(trig(shop, 'TR_C01_04_BREAKIN'), flags, seen, 'C01_SHOP')
 mustHidden(trig(shop, 'TR_C01_04_EXIT'), flags, seen, 'C01_SHOP')
 if (visibleHotspots(shop, flags, seen).length !== 0) fail('hotspots after 03')
 
+const {
+  cutoutSlots,
+  devEntriesOn,
+  isLfsPointer,
+  referencedFiles,
+  resolveArtRef,
+  slotsOverlap,
+  stillAt,
+} = await import('../src/scene/c01Art.ts')
+const visual = JSON.parse(readFileSync('public/config/c01_visual.json', 'utf8')) as {
+  dev_entries: boolean
+  subtitle_y: number
+  body_half_frac: number
+  canvas: { h: number }
+  portrait_anchor: { x: number; y: number; w: number; h: number }
+  backgrounds: Record<string, string>
+  chapter_card: { src: string; title_y: number; title_h: number }
+  cutaways: Record<string, { stills: string[] }>
+  portraits: Record<string, { src: string; mode: string; generated?: boolean }>
+}
+if (visual.dev_entries) fail('dev entries default on')
+if (visual.subtitle_y !== 1180) fail('subtitle band')
+if (visual.chapter_card.title_y !== 600 || visual.chapter_card.title_h !== 400) fail('title band')
+if (visual.portrait_anchor.x !== 512 || visual.portrait_anchor.y !== 1536) fail('portrait anchor')
+const files = referencedFiles(visual)
+if (files.some(file => file.includes('placeholder/'))) fail('placeholder path in visual config')
+for (const file of files) {
+  const buf = readFileSync(file.startsWith('public/') ? file : `public/${file}`)
+  if (buf.length < 1000) fail(`art too small ${file}`)
+  if (isLfsPointer(buf)) fail(`lfs pointer ${file}`)
+}
+for (const map of [shop, street, gate]) {
+  const refs = [map.art_ref, ...map.triggers.map(t => t.art_ref)].filter((ref): ref is string => !!ref)
+  for (const ref of refs) if (!visual.backgrounds[ref]) fail(`unmapped art_ref ${ref}`)
+}
+const seal = visual.cutaways.CUT_C01_02_FAKESEAL?.stills ?? []
+const tao = visual.cutaways.TR_C01_01_TAO?.stills ?? []
+if (seal.length !== 3) fail('fakeseal stills')
+if (new Set(seal).size !== 3) fail('fakeseal stills repeat')
+if (tao.length !== 1) fail('tao still')
+if (stillAt(seal, 0) !== seal[0] || stillAt(seal, 1) !== seal[1] || stillAt(seal, 2) !== seal[2] || stillAt(seal, 9) !== seal[2]) fail('still advance')
+if (stillAt(tao, 1) !== tao[0]) fail('tao holds')
+const speakerRows = JSON.parse(readFileSync('public/config/dialogues.json', 'utf8')) as {
+  dialogue_id: string
+  lines: { speaker: string }[]
+  choices: { followup_lines?: { speaker: string }[] }[]
+}[]
+const speakers = new Set<string>()
+for (const row of speakerRows) {
+  if (!/^DLG_C01[ABC]_/.test(row.dialogue_id)) continue
+  for (const line of row.lines) speakers.add(line.speaker)
+  for (const choice of row.choices) for (const line of choice.followup_lines ?? []) speakers.add(line.speaker)
+}
+speakers.delete('旁白')
+const catalog = new Set(Object.keys(visual.portraits))
+for (const name of speakers) if (!catalog.has(name)) fail(`speaker without portrait ${name}`)
+for (const name of catalog) if (!speakers.has(name)) fail(`unused portrait ${name}`)
+for (const [name, portrait] of Object.entries(visual.portraits)) {
+  if (portrait.mode !== 'cutout') fail(`default mode ${name}`)
+  if (name === '？？？' && !portrait.generated) fail('unknown silhouette should be generated')
+  if (name !== '？？？' && portrait.generated) fail(`generated flag on ${name}`)
+}
+const anchor = visual.portrait_anchor
+const one = cutoutSlots(1, 1000, anchor.x, anchor.w, visual.body_half_frac)[0]
+const expectedLeft = 1000 * 0.68 - 1000 * 0.62 * (anchor.x / anchor.w)
+if (!one || Math.abs(one.left - expectedLeft) > 0.01) fail('anchor placement')
+for (const width of [360, 374, 390]) {
+  if (slotsOverlap(cutoutSlots(2, width, anchor.x, anchor.w, visual.body_half_frac))) fail(`pair overlap ${width}`)
+  if (slotsOverlap(cutoutSlots(3, width, anchor.x, anchor.w, visual.body_half_frac))) fail(`trio overlap ${width}`)
+}
+if (devEntriesOn(false, '') || !devEntriesOn(false, '?dev=1') || devEntriesOn(true, '?dev=0') || !devEntriesOn(true, '')) fail('dev flag')
+const dayRef = resolveArtRef(shop, flagsOf({ c01_started: 1, c01_phase_day: 1 }), ['TR_C01_01_ENTER'])
+if (visual.backgrounds[dayRef ?? ''] !== 'assets/c01/bg/C01_SHOP_day.webp') fail(`day art ${dayRef}`)
+const duskRef = resolveArtRef(shop, flagsOf({ c01_started: 1, c01_01_done: 1, c01_02_done: 1, c01_phase_night: 1 }), [])
+if (visual.backgrounds[duskRef ?? ''] !== 'assets/c01/bg/C01_SHOP_dusk.webp') fail(`dusk art ${duskRef}`)
+const atticRef = resolveArtRef(
+  shop,
+  flagsOf({ c01_started: 1, c01_01_done: 1, c01_02_done: 1, c01_phase_night: 1, c01_empty_bowl_seen: 1, c01_bowl_wear_seen: 1 }),
+  ['TR_C01_03_ENTER', 'TR_C01_03_BOWLS', 'TR_C01_03_BOWL_WEAR'],
+)
+if (visual.backgrounds[atticRef ?? ''] !== 'assets/c01/bg/C01_ATTIC.webp') fail(`attic art ${atticRef}`)
+const streetRef = resolveArtRef(street, flagsOf({ c01_started: 1, c01_phase_day: 1, c01_lamps_picked: 1 }), [])
+if (visual.backgrounds[streetRef ?? ''] !== 'assets/c01/bg/C01_STREET_day.webp') fail(`street art ${streetRef}`)
+
 const hooks = ['就把剪刀也替我拿着', '站远些', '多费这一点', '我买了三十年东西，还得你领着', '谁教你这样接', '做久了就会', '我可不替你藏', '别咬线。']
 const blob = dialogues.filter(d => /^DLG_C01[ABC]_/.test(d.dialogue_id)).map(d => d.lines.map(l => l.text).join('\n')).join('\n')
 for (const hook of hooks) if (!blob.includes(hook)) fail(`missing hook ${hook}`)
@@ -160,6 +244,6 @@ for (const row of dialogues) {
 if (byDlg.get('DLG_C01D_01')?.lines[0].text !== '（骨架占位）') fail('later dialogue touched')
 if (byDlg.get('DLG_P01_01')?.lines[0].text !== '（骨架占位）') fail('prologue dialogue touched')
 const antiknot = street.triggers.find(t => t.id === 'MG_C01_01_ANTIKNOT')
-if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 160 || antiknot.shape.y !== 380 || antiknot.shape.w !== 370 || antiknot.shape.h !== 700) fail('antiknot box')
+if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 318 || antiknot.shape.y !== 392 || antiknot.shape.w !== 118 || antiknot.shape.h !== 392) fail('antiknot box')
 
 console.log('c01 playable checks ok', { beat: openBeat(flags), debt: flags.c01_yan2_debt })

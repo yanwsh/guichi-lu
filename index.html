@@ -1,10 +1,19 @@
-<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>归迟录</title>
-<style>html,body{margin:0;height:100%;background:#111;overflow:hidden;font-family:serif}
-body{display:flex;align-items:center;justify-content:center;background:radial-gradient(#2a2a30,#0b0b0e)}
-#app{position:relative;height:96vh;aspect-ratio:9/16;max-width:96vw;overflow:hidden;border:6px solid #3a3a42;border-radius:22px;box-shadow:0 0 0 2px #000,0 10px 40px #000c}
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>灯渡</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<style>html,body{margin:0;height:100%;background:#070605;overflow:hidden;font-family:serif}
+body{display:flex;align-items:center;justify-content:center}
+#app{position:relative;width:min(96vw,calc(96vh * 9 / 16));aspect-ratio:9/16;height:auto;overflow:hidden;border:6px solid #3a3a42;border-radius:22px;box-shadow:0 0 0 2px #000,0 10px 40px #000c;background:#100e0c;
+--art-x:0px;--art-y:0px;--art-w:100%;--art-h:100%;--frame-h:100%;--sub-y:1180;--canvas-h:1920;--title-y:600;--title-h:400}
 #app canvas{display:block;width:100%!important;height:100%!important}
 .ui{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f4ecd8;pointer-events:none}
 .ui h1{font-size:9vh;letter-spacing:.2em;text-shadow:0 0 12px #000;margin:0 0 6vh}
+body:not(.dev) #title{background:#100e0c}
+body:not(.dev) .dev-entry{display:none!important}
+body.dev #dengduTitle{display:none}
+#dengduTitle{text-align:center;margin-bottom:5vh}
+#dengduTitle p{margin:0 0 1.2vh;letter-spacing:.62em;font-size:2.2vh;opacity:.78}
+#dengduTitle h1{margin:0;font-size:5.4vh;letter-spacing:.22em;font-weight:normal;text-shadow:none}
+#enterC01{font-size:3vh;padding:1.5vh 4.2vh}
 button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d7a8;background:#2a3b4acc;color:#f4ecd8;border-radius:8px;font-family:inherit}
 .hud{justify-content:flex-start;padding-top:3vh}#hudText{font-size:3.2vh;background:#000a;padding:.8vh 2.4vh;border-radius:6px}.hud button{margin-top:auto!important;margin-bottom:5vh}.hidden{display:none}#dialog{position:absolute;left:3%;right:3%;bottom:16.67%;z-index:18;background:#1a1612e6;color:#f4ecd8;border:1px solid #e8d7a8;border-radius:10px;padding:2vh;font-size:2.6vh;cursor:pointer}#dialog .speaker{color:#e8c27a;font-weight:bold;margin-bottom:1vh}#dialog .hint{text-align:right;opacity:.6;font-size:2vh}#dialog button{display:block;width:100%;margin-top:1.2vh}.row{margin-top:auto;margin-bottom:5vh;display:flex;flex-direction:column;gap:1.5vh}.row button{margin:0!important}#battleLog{margin-top:2vh;font-size:2.4vh;background:#000a;padding:.8vh 2vh;border-radius:6px;max-width:90%}#mapBtn{position:absolute;top:2.4vh;right:2.4vh;font-size:2.2vh;padding:.8vh 2vh;z-index:5}
 #map{position:absolute;inset:0;z-index:20;background:#2d3e48 url(/W0/ui/UI_MAP_CH1.png) center/cover no-repeat;color:#f4ecd8;display:flex;flex-direction:column;align-items:center;padding:3vh 2vh;box-sizing:border-box}#map.hidden{display:none!important}
@@ -26,16 +35,50 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 #zoneLabel{position:absolute;top:8vh;left:3%;z-index:5;pointer-events:none;color:#f4ecd8;background:#000a;padding:.6vh 1.6vh;border-radius:6px;font-size:2.2vh}
 #zoneLabel small{display:block;opacity:.75;font-size:1.7vh}
 #mapSub{font-size:1.8vh;letter-spacing:.14em;opacity:.8;margin-top:.6vh}
+#artBoard,#cutaway,#portraitStage,#gateCard.has-art{position:absolute;left:var(--art-x);top:var(--art-y);width:var(--art-w);height:var(--art-h);right:auto;bottom:auto}
+#artBoard{z-index:2;background:#0c0b09;overflow:hidden}
+#artBoard.hidden,#cutaway.hidden,#portraitStage.hidden{display:none!important}
+#sceneBg,#cutawayStill{display:block;width:100%;height:100%;object-fit:fill}
+#cutaway{z-index:17;background:#070605}
+#cutawayStill{transition:opacity .22s ease}
 #hotspotLayer{position:absolute;inset:0;z-index:8;pointer-events:none}
 #hotspotLayer.locked{visibility:hidden}
 #hotspotLayer.hidden{display:none}
-.hotspot{position:absolute;pointer-events:auto;box-sizing:border-box;border:1px solid #e8d7a8;background:#2a3b4acc;color:#f4ecd8;font-size:1.8vh;padding:.4vh .8vh;border-radius:8px;line-height:1.25}
+.hotspotMark{position:absolute;box-sizing:border-box;border:none;outline:2px solid rgba(244,220,170,.95);outline-offset:-2px;background:rgba(232,184,96,.18);box-shadow:0 0 16px rgba(255,214,140,.42),inset 0 0 22px rgba(255,226,170,.16);border-radius:10px;pointer-events:none}
+.hotspotMark.circle{border-radius:50%}
+.hotspotLabels{position:absolute;left:6%;right:6%;top:6%;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.hotspotMark.single .hotspotLabels{inset:0}
+.hotspot{pointer-events:auto;border:1px solid rgba(232,215,168,.85);background:rgba(20,16,12,.78);color:#f4ecd8;font:inherit;font-size:1.7vh;padding:.4vh .7vh;border-radius:7px;line-height:1.25}
+.hotspotMark.single .hotspot,.hotspot.fill{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:none;text-shadow:0 1px 3px #000,0 0 8px #000;font-size:2vh;z-index:1}
+.hotspotMark.talk-first .hotspotLabels{z-index:2}
 #gateCard{position:absolute;inset:0;z-index:24;pointer-events:auto;background:#14120f;color:#f4ecd8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;text-align:center;padding:8vh;box-sizing:border-box}
 #gateCard.hidden{display:none!important}
 #gateCard h2{margin:0;letter-spacing:.4em;font-size:6vh;font-weight:normal}
 #gateCard p{margin:0;letter-spacing:.28em;font-size:3vh;opacity:.9}
+#gateCard.has-art{background:transparent;padding:0;display:block;pointer-events:none}
+#gateCard.has-art .gateTitle{position:absolute;left:8%;right:8%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5vh;color:#2c2418;text-shadow:0 1px 0 rgba(255,252,245,.4);pointer-events:none;top:calc(var(--title-y) / var(--canvas-h) * 100%);height:calc(var(--title-h) / var(--canvas-h) * 100%)}
+#gateCard.has-art .gateTitle p{margin:0;letter-spacing:.42em;font-size:2.4vh;opacity:1}
+#gateCard.has-art h2{margin:.2vh 0;font-size:6.2vh;letter-spacing:.48em;font-weight:500;color:#241c14}
+#gateEnter{pointer-events:auto}
+#gateCard.has-art #gateEnter{position:absolute;left:50%;top:auto;bottom:3.2%;transform:translateX(-50%);white-space:nowrap;font-size:2.5vh;padding:1.15vh 3vh;background:rgba(28,22,16,.84);color:#f4ecd8;border:1px solid #e8d7a8}
 #c01Banner{position:absolute;top:8vh;left:3%;right:3%;z-index:7;pointer-events:none;color:#f4ecd8;background:#000a;padding:.7vh 1.6vh;border-radius:6px;font-size:2vh}
 #c01Banner.hidden{display:none}
+#portraitStage{z-index:16;pointer-events:none;overflow:hidden}
+#portraitStage.leaving{z-index:1}
+.portrait{position:absolute;margin:0;opacity:0;transition:opacity .28s ease,filter .28s ease}
+.portrait.shown{opacity:1}
+.portrait.shown.dim{opacity:.7;filter:brightness(.62) saturate(.86)}
+.portrait.shown.active{opacity:1;filter:none}
+.portrait.leaving{opacity:0}
+.portrait.cutout{bottom:0;line-height:0}
+.portrait.cutout img{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 12px rgba(0,0,0,.38))}
+.portrait.cutout.glow img{filter:drop-shadow(0 0 10px rgba(255,236,200,.95)) drop-shadow(0 0 22px rgba(255,196,120,.8)) drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+.portrait.card{top:12%;width:30%;aspect-ratio:3/4;border:2px solid rgba(232,215,168,.9);border-radius:12px;overflow:hidden;background:#1a1612;box-shadow:0 14px 28px rgba(0,0,0,.48)}
+.portrait.card img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+#dialog.c01{left:var(--art-x);width:var(--art-w);right:auto;top:auto;bottom:calc(var(--frame-h) - var(--art-y) - var(--art-h));max-height:none;height:auto;background:none;border:none;box-shadow:none;padding:0;border-radius:0;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:auto}
+#dialog.c01 .plate{margin:0 5% calc(var(--art-h) * .062);background:rgba(16,13,10,.94);border:1px solid rgba(232,215,168,.55);border-radius:12px;padding:1.35vh 1.8vh 1.15vh;max-height:none;overflow:visible}
+#dialog.as-subtitle{left:var(--art-x);width:var(--art-w);right:auto;bottom:auto;top:calc(var(--art-y) + var(--art-h) * var(--sub-y) / var(--canvas-h));height:calc(var(--art-h) * (var(--canvas-h) - var(--sub-y)) / var(--canvas-h));max-height:none;background:none;border:none;box-shadow:none;border-radius:0;padding:1.2vh 8% calc(var(--art-h) * .05);box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end;z-index:20;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+#dialog.as-subtitle .plate{background:none;border:none;box-shadow:none;margin:0;padding:0;max-height:none}
 #shortOp{position:absolute;left:6%;right:6%;top:18%;z-index:22;background:#1a1612f2;color:#f4ecd8;border:1px solid #e8d7a8;border-radius:12px;padding:2.2vh;display:flex;flex-direction:column;gap:1.2vh}
 #shortOp.hidden{display:none!important}
 #shortOp button{width:100%}
@@ -43,6 +86,6 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 .shortOpHint,.shortOpToast{font-size:2.2vh;line-height:1.5}
 .shortOpToast{color:#e7a08c}
 </style></head>
-<body><div id="app"><div id="title" class="ui"><h1>《归迟录》</h1><button id="enter">开始游戏</button><button id="continue" class="hidden" style="margin-top:2vh">继续</button><button id="enterTown" style="margin-top:2vh">SC_03 可走桩</button><button id="enterC01" style="margin-top:2vh">第一章 · 纸灯</button></div>
-<div id="hud" class="ui hud hidden"><div id="hudText">灰盒</div><div id="battleLog" class="hidden"></div><div class="row"><div id="interacts" class="row" style="margin:0"></div><button id="next" class="hidden">前往下一场景</button><button id="attack" class="hidden">攻击</button><button id="retreat" class="hidden">撤退（返回场景）</button><button id="dbgBattle">调试 · 战斗桩</button></div></div><button id="mapBtn" class="hidden">地图</button><div id="map" class="hidden"><h2 id="mapTitle">第一章</h2><div id="mapSub">非主路径 · 暂停总览</div><div id="mapObj"></div><div id="mapNodes"></div><button id="mapClose">关闭</button></div><div id="locCard"></div><div id="reward" class="hidden"><h2>获得</h2><div id="rewardBody"></div><button id="rewardOk">收好，进镇</button></div><div id="endCard" class="hidden"><h2 id="endTitle">第一章 · 未完</h2><div id="endBody"></div><div class="row"><button id="endClose">关闭</button><button id="endContinue">继续</button></div></div><div id="zoneLabel" class="hidden"><span id="zoneName">山门前</span><small id="zoneObj"></small></div><div id="joystick" class="hidden"><div id="joyKnob"></div></div><button id="walkInteract" class="hidden">调查</button><div id="c01Banner" class="hidden"></div><div id="hotspotLayer" class="hidden"></div><div id="gateCard" class="hidden"><p>灯渡</p><h2>第一章</h2><p>纸灯里有个人</p><button id="gateEnter" type="button">进入青蒲灯铺</button></div><div id="shortOp" class="hidden"></div><div id="dialogDim" class="hidden"></div><img id="talkPortrait" class="hidden" alt=""><div id="dialog" class="hidden"></div></div>
+<body><div id="app"><div id="title" class="ui"><h1 id="legacyTitle" class="dev-entry">《归迟录》</h1><div id="dengduTitle"><p>灯渡</p><h1>第一章 · 纸灯</h1></div><button id="enter" class="dev-entry" type="button">开始游戏</button><button id="continue" class="dev-entry hidden" style="margin-top:2vh" type="button">继续</button><button id="enterTown" class="dev-entry" style="margin-top:2vh" type="button">SC_03 可走桩</button><button id="enterC01" style="margin-top:2vh" type="button">第一章 · 纸灯</button></div>
+<div id="hud" class="ui hud hidden"><div id="hudText">灰盒</div><div id="battleLog" class="hidden"></div><div class="row"><div id="interacts" class="row" style="margin:0"></div><button id="next" class="hidden" type="button">前往下一场景</button><button id="attack" class="hidden" type="button">攻击</button><button id="retreat" class="hidden" type="button">撤退（返回场景）</button><button id="dbgBattle" class="dev-entry" type="button">调试 · 战斗桩</button></div></div><button id="mapBtn" class="hidden" type="button">地图</button><div id="map" class="hidden"><h2 id="mapTitle">第一章</h2><div id="mapSub">非主路径 · 暂停总览</div><div id="mapObj"></div><div id="mapNodes"></div><button id="mapClose" type="button">关闭</button></div><div id="locCard"></div><div id="reward" class="hidden"><h2>获得</h2><div id="rewardBody"></div><button id="rewardOk" type="button">收好，进镇</button></div><div id="endCard" class="hidden"><h2 id="endTitle">第一章 · 未完</h2><div id="endBody"></div><div class="row"><button id="endClose" type="button">关闭</button><button id="endContinue" type="button">继续</button></div></div><div id="zoneLabel" class="hidden"><span id="zoneName">山门前</span><small id="zoneObj"></small></div><div id="joystick" class="hidden"><div id="joyKnob"></div></div><button id="walkInteract" class="hidden" type="button">调查</button><div id="c01Banner" class="hidden"></div><div id="artBoard" class="hidden"><img id="sceneBg" alt=""><div id="hotspotLayer" class="hidden"></div></div><div id="cutaway" class="hidden"><img id="cutawayStill" alt=""></div><div id="portraitStage" class="hidden"></div><div id="gateCard" class="hidden"><div class="gateTitle"><p>灯渡</p><h2>第一章</h2><p>纸灯里有个人</p></div><button id="gateEnter" type="button">进入青蒲灯铺</button></div><div id="shortOp" class="hidden"></div><div id="dialogDim" class="hidden"></div><img id="talkPortrait" class="hidden" alt=""><div id="dialog" class="hidden"></div></div>
 <script type="module" src="/src/main.ts"></script></body></html>

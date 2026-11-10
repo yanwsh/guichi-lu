@@ -1,0 +1,183 @@
+[
+  {
+    "repo_path": "public/assets/c01/bg/C01_SHOP_day.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。灯铺前堂日。"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_STREET_day.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。镇街檐路日。"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_SHOP_dusk.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。灯铺晚饭昏。"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_ATTIC.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。阁楼旧灯。"
+  },
+  {
+    "repo_path": "public/assets/c01/title/CH1_GATE_title.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/章题/CH1_GATE_title.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。y600～1000 为雾区，章题文字由程序叠上。"
+  },
+  {
+    "repo_path": "public/assets/c01/still/CUT_C01_02_FAKESEAL_1.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/切镜/CUT_C01_02_FAKESEAL_1.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。假印切镜 1：窄巷。y≈1180 以下已压暗，作字幕区。"
+  },
+  {
+    "repo_path": "public/assets/c01/still/CUT_C01_02_FAKESEAL_2.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/切镜/CUT_C01_02_FAKESEAL_2.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。假印切镜 2：河署维护渠。"
+  },
+  {
+    "repo_path": "public/assets/c01/still/CUT_C01_02_FAKESEAL_3.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/切镜/CUT_C01_02_FAKESEAL_3.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。假印切镜 3：封印室假印。"
+  },
+  {
+    "repo_path": "public/assets/c01/still/CUT_C01_01_TAO.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/切镜/CUT_C01_01_TAO.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "白澈交付，已转 webp。陶慎切镜：远处桥/船。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/xu_zhaoning.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/许照宁.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/liang_suniang.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/梁素娘.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/yan_gui.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/晏归.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。弓向右伸，外框中心约 x=584；对齐用锚点 512，不按外框居中。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/yan_er.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/严二.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/he_zhanggui.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/何掌柜.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/tao_shen.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/陶慎.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/cheng_shen.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/程婶.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/liu_po.webp",
+    "source_path": "docs/03-美术/灯渡/第一章灰盒/立绘/柳婆.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "白澈交付，已转 webp。RGBA，锚点底边中心。"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/unknown.webp",
+    "source_path": null,
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": true,
+    "placeholder": false,
+    "generated": true,
+    "mode": "cutout",
+    "anchor": [512, 1536],
+    "note": "程序生成的暗色剪影，给说话人「？？？」。设计如此，不是待替换的占位图。"
+  }
+]
