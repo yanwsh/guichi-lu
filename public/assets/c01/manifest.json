@@ -1,0 +1,92 @@
+[
+  {
+    "repo_path": "public/assets/c01/bg/C01_SHOP_day.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_STREET_day.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_SHOP_dusk.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/bg/C01_ATTIC.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/placeholder/CH1_GATE_title.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/scenes/S01_青蒲镇照宁灯铺.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": true,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/placeholder/CUT_C01_02_FAKESEAL.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/第一章灰盒/C01_门廊夜.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": true,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/placeholder/CUT_C01_01_TAO.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/序章灰盒/P03_去青蒲客船.png",
+    "w": 1080,
+    "h": 1920,
+    "has_alpha": false,
+    "placeholder": true,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/xu_zhaoning.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/characters/C01_许照宁.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/liang_suniang.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/characters/C07_梁素娘.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  },
+  {
+    "repo_path": "public/assets/c01/portrait/yan_gui.webp",
+    "source_path": "/workspace/docs/03-美术/灯渡/characters/C02_晏归.png",
+    "w": 1024,
+    "h": 1536,
+    "has_alpha": false,
+    "placeholder": false,
+    "note": "立绘为RGB不透明，白澈将出RGBA 1024×1536 锚点底边中心(512,1536)；缺：严二/何掌柜/陶慎/程婶/柳婆"
+  }
+]
