@@ -244,6 +244,6 @@ for (const row of dialogues) {
 if (byDlg.get('DLG_C01D_01')?.lines[0].text !== '（骨架占位）') fail('later dialogue touched')
 if (byDlg.get('DLG_P01_01')?.lines[0].text !== '（骨架占位）') fail('prologue dialogue touched')
 const antiknot = street.triggers.find(t => t.id === 'MG_C01_01_ANTIKNOT')
-if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 160 || antiknot.shape.y !== 380 || antiknot.shape.w !== 370 || antiknot.shape.h !== 700) fail('antiknot box')
+if (!antiknot?.shape || antiknot.shape.kind !== 'box' || antiknot.shape.x !== 318 || antiknot.shape.y !== 392 || antiknot.shape.w !== 118 || antiknot.shape.h !== 392) fail('antiknot box')
 
 console.log('c01 playable checks ok', { beat: openBeat(flags), debt: flags.c01_yan2_debt })

@@ -58,12 +58,12 @@ async function readState(page) {
     const board = document.getElementById('artBoard')?.getBoundingClientRect()
     if (priceBtn && board && board.width > 0) {
       const r = priceBtn.getBoundingClientRect()
-      price = {
-        dx: r.left - (board.left + 640 / 1080 * board.width),
-        dy: r.top - (board.top + 320 / 1920 * board.height),
-        dw: r.width - 150 / 1080 * board.width,
-        dh: r.height - 80 / 1920 * board.height,
-      }
+        price = {
+          dx: r.left - (board.left + 558 / 1080 * board.width),
+          dy: r.top - (board.top + 276 / 1920 * board.height),
+          dw: r.width - 214 / 1080 * board.width,
+          dh: r.height - 118 / 1920 * board.height,
+        }
     }
     const app = document.getElementById('app')?.getBoundingClientRect()
     return {
@@ -93,7 +93,96 @@ async function snap(page, file) {
   console.log('shot', file)
 }
 
-async function act(page, state) {
+function shapeCenter(shape) {
+  if (shape.kind === 'circle') return { x: shape.x, y: shape.y }
+  return { x: shape.x + shape.w / 2, y: shape.y + shape.h / 2 }
+}
+function shapeKey(shape) {
+  if (shape.kind === 'circle') return `c:${shape.x}:${shape.y}:${shape.r}`
+  return `b:${shape.x}:${shape.y}:${shape.w}:${shape.h}`
+}
+function findShape(maps, id) {
+  for (const map of Object.values(maps)) {
+    const row = map.triggers.find(t => t.id === id)
+    if (row?.shape) return row.shape
+  }
+  return null
+}
+function shapeContains(shape, px, py) {
+  if (shape.kind === 'circle') return Math.hypot(px - shape.x, py - shape.y) <= shape.r + 1
+  return px >= shape.x - 1 && py >= shape.y - 1 && px <= shape.x + shape.w + 1 && py <= shape.y + shape.h + 1
+}
+
+async function assertChoices(page, name) {
+  const buttons = page.locator('#dialog button')
+  const count = await buttons.count()
+  if (!count) return []
+  const vp = page.viewportSize()
+  const texts = []
+  for (let i = 0; i < count; i++) {
+    const button = buttons.nth(i)
+    const box = await button.boundingBox()
+    const text = (await button.innerText()).trim()
+    texts.push(text)
+    if (!box) throw new Error(`${text} has no box on ${name}`)
+    const inside = box.x >= -1 && box.y >= -1 && box.x + box.width <= vp.width + 1 && box.y + box.height <= vp.height + 1
+    if (!inside) throw new Error(`${text} is clipped on ${name}: ${JSON.stringify(box)} vp ${vp.width}x${vp.height}`)
+    const hit = await page.evaluate(({ x, y }) => {
+      const el = document.elementFromPoint(x, y)
+      return el?.closest?.('button') === el ? (el.textContent || '').trim() : (el?.className || el?.id || 'none')
+    }, { x: box.x + box.width / 2, y: box.y + box.height / 2 })
+    if (hit !== text) throw new Error(`${text} elementFromPoint hit ${JSON.stringify(hit)} on ${name}`)
+  }
+  const question = page.locator('#dialog .text')
+  const qBox = await question.boundingBox()
+  if (!qBox) throw new Error(`choice question missing on ${name}`)
+  const qInside = qBox.x >= -1 && qBox.y >= -1 && qBox.x + qBox.width <= vp.width + 1 && qBox.y + qBox.height <= vp.height + 1
+  if (!qInside) throw new Error(`choice question clipped on ${name}`)
+  const qHit = await page.evaluate(({ x, y }) => {
+    const el = document.elementFromPoint(x, y)
+    if (!el) return 'none'
+    if (el.closest('button')) return 'button'
+    return document.getElementById('dialog')?.contains(el) ? 'dialog' : (el.className || 'outside')
+  }, { x: qBox.x + qBox.width / 2, y: qBox.y + Math.min(8, qBox.height / 2) })
+  if (qHit !== 'dialog') throw new Error(`choice plate covers the question on ${name}: ${qHit}`)
+  return texts
+}
+
+async function clickHotspotAtShape(page, maps, clicked) {
+  const info = await page.evaluate(() => {
+    const board = document.getElementById('artBoard').getBoundingClientRect()
+    const buttons = [...document.querySelectorAll('#hotspotLayer button')].map(b => {
+      const r = b.getBoundingClientRect()
+      return { id: b.dataset.triggerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2 }
+    })
+    return { board: { x: board.left, y: board.top, w: board.width, h: board.height }, buttons }
+  })
+  if (!info.buttons.length) return null
+  const pick = info.buttons.find(b => b.id !== 'TR_C01_01_EXIT' && b.id !== 'TR_C01_01_BACK') || info.buttons[0]
+  const shape = findShape(maps, pick.id)
+  if (!shape) throw new Error(`no shape for ${pick.id}`)
+  const center = shapeCenter(shape)
+  const siblings = info.buttons.filter(b => shapeKey(findShape(maps, b.id)) === shapeKey(shape))
+  let x = info.board.x + center.x / 1080 * info.board.w
+  let y = info.board.y + center.y / 1920 * info.board.h
+  if (siblings.length > 1) {
+    const px = ((pick.cx - info.board.x) / info.board.w) * 1080
+    const py = ((pick.cy - info.board.y) / info.board.h) * 1920
+    if (!shapeContains(shape, px, py)) throw new Error(`${pick.id} label is outside its shape`)
+    x = pick.cx
+    y = pick.cy
+  }
+  const hit = await page.evaluate(({ x, y }) => {
+    const el = document.elementFromPoint(x, y)
+    return el?.closest?.('[data-trigger-id]')?.dataset?.triggerId ?? null
+  }, { x, y })
+  if (hit !== pick.id) throw new Error(`shape click for ${pick.id} hit ${hit} at ${x.toFixed(1)},${y.toFixed(1)}`)
+  await page.mouse.click(x, y)
+  clicked.add(pick.id)
+  return pick.id
+}
+
+async function act(page, state, maps, clicked) {
   if (state.dialog) {
     const choice = page.locator('#dialog button', { hasText: '分期延后' })
     if (await choice.count()) { await choice.first().click(); return 'choice' }
@@ -113,17 +202,8 @@ async function act(page, state) {
     return `op:${state.shortTitle}`
   }
   if (state.gate) { await page.locator('#gateEnter').click(); return 'gate' }
-  const hot = page.locator('#hotspotLayer button')
-  const count = await hot.count()
-  if (count) {
-    let target = hot.first()
-    for (let i = 0; i < count; i++) {
-      const id = await hot.nth(i).getAttribute('data-trigger-id')
-      if (id !== 'TR_C01_01_EXIT' && id !== 'TR_C01_01_BACK') { target = hot.nth(i); break }
-    }
-    await target.click()
-    return 'hotspot'
-  }
+  const hotId = await clickHotspotAtShape(page, maps, clicked)
+  if (hotId) return `hotspot:${hotId}`
   return 'idle'
 }
 
@@ -153,7 +233,13 @@ async function walk(page, name) {
     return img && img.complete && img.naturalWidth === 1080
   })
   await snap(page, `chapter-${name}`)
+  const maps = {}
+  for (const id of ['C01_SHOP', 'C01_STREET']) {
+    maps[id] = await (await page.request.get(`${base}config/walkmaps/${id}.json`)).json()
+  }
   const seen = new Set()
+  const clicked = new Set()
+  const choicesSeen = new Set()
   let stuck = ''
   let stuckN = 0
   let priceChecked = false
@@ -225,10 +311,24 @@ async function walk(page, name) {
       if (Math.abs(ratio - 9 / 16) > 0.02) throw new Error(`frame ratio ${ratio} on ${name}`)
       if (name === '1440x900' && app.w > 700) throw new Error('desktop frame is not letterboxed')
       if (name === '390x844' && app.w > 390) throw new Error('phone frame wider than the viewport')
-      console.log('finished', name, { errors: errors.length, app })
+      for (const label of ['收下杉木', '分期延后', '只留张欠条']) {
+        if (!choicesSeen.has(label)) throw new Error(`choice ${label} was not checked on ${name}`)
+      }
+      const requiredClicks = [
+        'TR_C01_01_PRICE', 'TR_C01_01_PURSE', 'TR_C01_01_LAMPS', 'TR_C01_01_EXIT', 'TR_C01_01_SCISSORS',
+        'TR_C01_02_YANGUI_IN', 'TR_C01_02_KNOT_Q', 'MG_C01_02_SUNKLAMP', 'CH_C01_02_DEPOSIT', 'TR_C01_02_BEAM', 'TR_C01_02_TASSEL',
+        'TR_C01_01_HE', 'TR_C01_01_YAN2', 'CH_C01_01_YAN2_DEBT', 'TR_C01_01_TAO', 'TR_C01_01_CHENG', 'MG_C01_01_ANTIKNOT', 'TR_C01_01_BACK',
+        'TR_C01_03_ENTER', 'TR_C01_03_BOWLS', 'TR_C01_03_BOWL_WEAR', 'MG_C01_03_STOOL', 'MG_C01_03_OLDLAMP', 'TR_C01_03_PRESS',
+      ]
+      const missed = requiredClicks.filter(id => !clicked.has(id))
+      if (missed.length) throw new Error(`hotspots not clicked on ${name}: ${missed.join(', ')}`)
+      console.log('finished', name, { errors: errors.length, app, choices: [...choicesSeen], clicks: clicked.size })
       return
     }
-    const what = await act(page, state)
+    if (state.dialog && await page.locator('#dialog button').count()) {
+      for (const text of await assertChoices(page, name)) choicesSeen.add(text)
+    }
+    const what = await act(page, state, maps, clicked)
     if (what === 'idle') throw new Error(`nothing to do on ${name}: ${JSON.stringify(state)}`)
     await page.waitForTimeout(40)
   }
