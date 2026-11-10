@@ -1,0 +1,43 @@
+{
+  "dev_entries": false,
+  "canvas": { "w": 1080, "h": 1920 },
+  "portrait_anchor": { "x": 512, "y": 1536, "w": 1024, "h": 1536 },
+  "body_half_frac": 0.32,
+  "subtitle_y": 1180,
+  "backgrounds": {
+    "docs/03-美术/灯渡/第一章灰盒/C01_灯铺前堂日.png": "assets/c01/bg/C01_SHOP_day.webp",
+    "docs/03-美术/灯渡/第一章灰盒/C01_镇街檐路日.png": "assets/c01/bg/C01_STREET_day.webp",
+    "docs/03-美术/灯渡/第一章灰盒/C01_灯铺晚饭昏.png": "assets/c01/bg/C01_SHOP_dusk.webp",
+    "docs/03-美术/灯渡/第一章灰盒/C01_阁楼旧灯.png": "assets/c01/bg/C01_ATTIC.webp"
+  },
+  "chapter_card": {
+    "src": "assets/c01/title/CH1_GATE_title.webp",
+    "title_y": 600,
+    "title_h": 400
+  },
+  "cutaways": {
+    "CUT_C01_02_FAKESEAL": {
+      "stills": [
+        "assets/c01/still/CUT_C01_02_FAKESEAL_1.webp",
+        "assets/c01/still/CUT_C01_02_FAKESEAL_2.webp",
+        "assets/c01/still/CUT_C01_02_FAKESEAL_3.webp"
+      ]
+    },
+    "TR_C01_01_TAO": {
+      "stills": [
+        "assets/c01/still/CUT_C01_01_TAO.webp"
+      ]
+    }
+  },
+  "portraits": {
+    "许照宁": { "src": "assets/c01/portrait/xu_zhaoning.webp", "mode": "cutout" },
+    "梁素娘": { "src": "assets/c01/portrait/liang_suniang.webp", "mode": "cutout" },
+    "晏归": { "src": "assets/c01/portrait/yan_gui.webp", "mode": "cutout" },
+    "严二": { "src": "assets/c01/portrait/yan_er.webp", "mode": "cutout" },
+    "何掌柜": { "src": "assets/c01/portrait/he_zhanggui.webp", "mode": "cutout" },
+    "陶慎": { "src": "assets/c01/portrait/tao_shen.webp", "mode": "cutout" },
+    "程婶": { "src": "assets/c01/portrait/cheng_shen.webp", "mode": "cutout" },
+    "柳婆": { "src": "assets/c01/portrait/liu_po.webp", "mode": "cutout" },
+    "？？？": { "src": "assets/c01/portrait/unknown.webp", "mode": "cutout", "generated": true }
+  }
+}

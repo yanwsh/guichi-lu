@@ -1,6 +1,7 @@
 import type { GameDb, SceneRow, DialogueRow, EncounterRow, FlagRow, LinkRow, MapNodeRow, SceneTrigger } from './types';
 import type { WalkMap } from '../walk/walkTypes';
 import type { HotspotMap } from './hotspotTypes';
+import type { C01Visual } from '../scene/c01Art';
 const base = `${import.meta.env.BASE_URL}config/`;
 async function get<T>(name: string): Promise<T> {
   const r = await fetch(base + name + '.json');
@@ -21,6 +22,11 @@ export async function loadWalkMap(sceneId: string): Promise<WalkMap | null> {
   const r = await fetch(`${base}walkmaps/${sceneId}.json`);
   if (!r.ok) return null;
   return r.json() as Promise<WalkMap>;
+}
+export async function loadC01Visual(): Promise<C01Visual> {
+  const r = await fetch(`${base}c01_visual.json`);
+  if (!r.ok) throw new Error(`config load failed: c01_visual (${r.status})`);
+  return r.json() as Promise<C01Visual>;
 }
 /** 灯渡章题卡 / 灯铺 / 镇街。表结构与 SC_03 不同，不要送进 WalkScene.load。 */
 export async function loadHotspotMap(sceneId: string): Promise<HotspotMap | null> {

@@ -1,7 +1,7 @@
 import type { HotspotChip } from '../walk/c01Flow'
-import type { HotspotMap, HotspotTrigger } from '../data/hotspotTypes'
+import type { HotspotMap, HotspotShape, HotspotTrigger } from '../data/hotspotTypes'
 
-/** 1080×1920 热点层。无底板时用色块，不走 SC_03 的寻路。 */
+/** Highlights sit on the walkmap shape, in the same 1080×1920 space as the background. */
 export class HotspotBoard {
   onClick: (trigger: HotspotTrigger) => void = () => {}
   private map: HotspotMap | null = null
@@ -15,43 +15,53 @@ export class HotspotBoard {
   render(chips: HotspotChip[]) {
     const canvas = this.map?.canvas ?? { w: 1080, h: 1920 }
     this.layer.innerHTML = ''
-    const placed: { x: number; y: number; w: number; h: number }[] = []
-    const chipH = 56
+    const groups = new Map<string, HotspotChip[]>()
     for (const chip of chips) {
       const shape = chip.trigger.shape
       if (!shape) continue
-      const button = document.createElement('button')
-      button.type = 'button'
-      button.className = 'hotspot'
-      button.dataset.triggerId = chip.trigger.id
-      button.textContent = chip.label
-      const box = shape.kind === 'circle'
-        ? { x: shape.x - shape.r, y: shape.y - shape.r, w: shape.r * 2, h: shape.r * 2 }
-        : { x: shape.x, y: shape.y, w: shape.w, h: shape.h }
-      const w = Math.max(box.w, 160)
-      let y = box.y + chip.index * (chipH + 8)
-      let guard = 0
-      while (guard < 24 && placed.some(p => overlaps(box.x, y, w, chipH, p))) {
-        y += chipH + 8
-        guard++
+      const key = shapeKey(shape)
+      const list = groups.get(key)
+      if (list) list.push(chip)
+      else groups.set(key, [chip])
+    }
+    for (const group of groups.values()) {
+      const shape = group[0].trigger.shape
+      if (!shape) continue
+      const mark = document.createElement('div')
+      mark.className = `hotspotMark${shape.kind === 'circle' ? ' circle' : ''}${group.length === 1 ? ' single' : ''}`
+      const box = bounds(shape)
+      mark.style.left = `${box.x / canvas.w * 100}%`
+      mark.style.top = `${box.y / canvas.h * 100}%`
+      mark.style.width = `${box.w / canvas.w * 100}%`
+      mark.style.height = `${box.h / canvas.h * 100}%`
+      const labels = document.createElement('div')
+      labels.className = 'hotspotLabels'
+      for (const chip of group) {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'hotspot'
+        button.dataset.triggerId = chip.trigger.id
+        button.textContent = chip.label
+        button.onclick = event => {
+          event.stopPropagation()
+          this.onClick(chip.trigger)
+        }
+        labels.append(button)
       }
-      if (y + chipH > canvas.h - 8) y = Math.max(8, canvas.h - chipH - 8)
-      placed.push({ x: box.x, y, w, h: chipH })
-      button.style.left = `${box.x / canvas.w * 100}%`
-      button.style.top = `${y / canvas.h * 100}%`
-      button.style.width = `${w / canvas.w * 100}%`
-      button.style.height = `${chipH / canvas.h * 100}%`
-      button.onclick = event => {
-        event.stopPropagation()
-        this.onClick(chip.trigger)
-      }
-      this.layer.append(button)
+      mark.append(labels)
+      this.layer.append(mark)
     }
   }
 
   clear() { this.layer.innerHTML = '' }
 }
 
-function overlaps(x: number, y: number, w: number, h: number, other: { x: number; y: number; w: number; h: number }) {
-  return x < other.x + other.w && x + w > other.x && y < other.y + other.h && y + h > other.y
+function bounds(shape: HotspotShape) {
+  if (shape.kind === 'circle') return { x: shape.x - shape.r, y: shape.y - shape.r, w: shape.r * 2, h: shape.r * 2 }
+  return { x: shape.x, y: shape.y, w: shape.w, h: shape.h }
+}
+
+function shapeKey(shape: HotspotShape) {
+  if (shape.kind === 'circle') return `c:${shape.x}:${shape.y}:${shape.r}`
+  return `b:${shape.x}:${shape.y}:${shape.w}:${shape.h}`
 }

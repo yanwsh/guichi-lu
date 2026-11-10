@@ -1,6 +1,6 @@
 import type { GameDb, MapNodeRow } from '../data/types';
 import { type GameState, saveGame } from '../save/gameState';
-import type { DialogRunner } from '../dialog/dialogRunner';
+import type { DialogRunner, DialogRunOptions } from '../dialog/dialogRunner';
 import type { ScenePresenter } from '../scene/scenePresenter';
 import { startBattle } from '../battle/battleLogic';
 import type { WalkBridge } from '../walk/walkScene';
@@ -20,6 +20,10 @@ export interface FlowHooks {
   onToast?(text: string): void;
   onHotspotScene?(sceneId: string): void | Promise<void>;
   onShortOp?(op: ShortOpDef): Promise<boolean>;
+  /** Switch the room art before this beat's lines. */
+  onHotspotFocus?(trigger: HotspotTrigger): void;
+  /** Still list for a cutaway beat. Empty means ordinary dialogue over the room. */
+  cutawayStills?(triggerId: string): string[] | null;
 }
 /** 灰盒：抉择→分支对白（苏禾草稿 README，不改 DialogueRow） */
 const CHOICE_DIALOGUE: Record<string, string> = { CHO_OPEN_LETTER: 'DLG_OPEN_LETTER_PEEK', CHO_KEEP_SEALED: 'DLG_OPEN_LETTER_KEEP', CHO_SAVE_LIFE: 'DLG_CHOICE_SAVE_01', CHO_CHASE: 'DLG_CHOICE_CHASE_01' };
@@ -84,18 +88,21 @@ export class FlowController {
     this.onDialogueEnd();
   }
   /** 播放对白链（next_dialogue_id / 抉择 followup_lines）；返回链尾 start_encounter_id */
-  private async playChain(id?: string): Promise<string | undefined> {
+  private async playChain(id?: string, opts?: DialogRunOptions): Promise<string | undefined> {
     let enc: string | undefined;
+    let first = true;
+    const later = opts?.presentation ? { presentation: opts.presentation } : undefined;
     while (id) {
       const d = this.db.dialogues.get(id); if (!d) break;
-      const choice = await this.dialog.run(d);
+      const choice = await this.dialog.run(d, first ? opts : later);
+      first = false;
       this.markDialogue(d.dialogue_id);
       if (choice) {
         this.state.flags[choice.set_flag] = choice.value; saveGame(this.state);
         const mapped = CHOICE_DIALOGUE[choice.choice_id];
-        if (mapped && this.db.dialogues.get(mapped)) { await this.dialog.run(this.db.dialogues.get(mapped)!); this.markDialogue(mapped); }
+        if (mapped && this.db.dialogues.get(mapped)) { await this.dialog.run(this.db.dialogues.get(mapped)!, later); this.markDialogue(mapped); }
         if (choice.choice_id === 'CHO_SAVE_LIFE') { this.state.flags['link_tongxin_unlocked'] = 1; saveGame(this.state); }
-        if (choice.followup_lines?.length) await this.dialog.run({ dialogue_id: `${d.dialogue_id}_${choice.choice_id}`, lines: choice.followup_lines, choices: [] });
+        if (choice.followup_lines?.length) await this.dialog.run({ dialogue_id: `${d.dialogue_id}_${choice.choice_id}`, lines: choice.followup_lines, choices: [] }, later);
       }
       enc = d.start_encounter_id ?? enc; id = d.next_dialogue_id;
     }
@@ -127,12 +134,14 @@ export class FlowController {
    * 只允许章题卡、灯铺、镇街之间跳转，不去灯街 / 火后 / 待续。
    */
   async handleHotspotTrigger(t: HotspotTrigger) {
+    this.hooks.onHotspotFocus?.(t);
     const op = shortOpForTrigger(t.id);
     if (op) {
       const ok = await this.hooks.onShortOp?.(op);
       if (!ok) return;
     }
-    if (t.result?.dialogue_id) await this.playChain(t.result.dialogue_id);
+    const stills = this.hooks.cutawayStills?.(t.id) ?? undefined;
+    if (t.result?.dialogue_id) await this.playChain(t.result.dialogue_id, { stills, presentation: 'c01' });
     applySetFlags(this.state.flags, t.result?.set_flags);
     if (t.once !== false) this.markTrigger(t.id);
     saveGame(this.state);
