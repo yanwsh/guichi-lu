@@ -59,10 +59,10 @@ async function readState(page) {
     if (priceBtn && board && board.width > 0) {
       const r = priceBtn.getBoundingClientRect()
         price = {
-          dx: r.left - (board.left + 558 / 1080 * board.width),
-          dy: r.top - (board.top + 276 / 1920 * board.height),
-          dw: r.width - 214 / 1080 * board.width,
-          dh: r.height - 118 / 1920 * board.height,
+          dx: r.left - (board.left + 640 / 1080 * board.width),
+          dy: r.top - (board.top + 325 / 1920 * board.height),
+          dw: r.width - 135 / 1080 * board.width,
+          dh: r.height - 75 / 1920 * board.height,
         }
     }
     const app = document.getElementById('app')?.getBoundingClientRect()
@@ -165,21 +165,28 @@ async function clickHotspotAtShape(page, maps, clicked) {
   const siblings = info.buttons.filter(b => shapeKey(findShape(maps, b.id)) === shapeKey(shape))
   let x = info.board.x + center.x / 1080 * info.board.w
   let y = info.board.y + center.y / 1920 * info.board.h
-  if (siblings.length > 1) {
+  let expectId = pick.id
+  const siblingIds = siblings.map(b => b.id)
+  const yanPair = siblingIds.includes('TR_C01_01_YAN2') && siblingIds.includes('CH_C01_01_YAN2_DEBT')
+  if (siblings.length > 1 && !yanPair) {
     const px = ((pick.cx - info.board.x) / info.board.w) * 1080
     const py = ((pick.cy - info.board.y) / info.board.h) * 1920
     if (!shapeContains(shape, px, py)) throw new Error(`${pick.id} label is outside its shape`)
     x = pick.cx
     y = pick.cy
   }
+  if (yanPair) expectId = 'TR_C01_01_YAN2'
   const hit = await page.evaluate(({ x, y }) => {
     const el = document.elementFromPoint(x, y)
     return el?.closest?.('[data-trigger-id]')?.dataset?.triggerId ?? null
   }, { x, y })
-  if (hit !== pick.id) throw new Error(`shape click for ${pick.id} hit ${hit} at ${x.toFixed(1)},${y.toFixed(1)}`)
+  if (hit !== expectId) throw new Error(`shape click for ${expectId} hit ${hit} at ${x.toFixed(1)},${y.toFixed(1)}`)
+  if (expectId === 'TR_C01_01_PRICE' || expectId === 'TR_C01_01_YAN2') {
+    console.log('center hit', expectId, { x: x.toFixed(1), y: y.toFixed(1) })
+  }
   await page.mouse.click(x, y)
-  clicked.add(pick.id)
-  return pick.id
+  clicked.add(expectId)
+  return expectId
 }
 
 async function act(page, state, maps, clicked) {

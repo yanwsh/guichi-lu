@@ -68,7 +68,7 @@ export class PortraitStage {
 
   private create(speaker: string, def: PortraitDef) {
     const fig = document.createElement('figure')
-    fig.className = `portrait ${def.mode === 'card' ? 'card' : 'cutout'}`
+    fig.className = `portrait ${def.mode === 'card' ? 'card' : 'cutout'}${def.generated ? ' glow' : ''}`
     fig.dataset.speaker = speaker
     fig.dataset.mode = def.mode
     const img = document.createElement('img')

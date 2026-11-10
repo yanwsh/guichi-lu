@@ -27,26 +27,25 @@ export class HotspotBoard {
     for (const group of groups.values()) {
       const shape = group[0].trigger.shape
       if (!shape) continue
+      const talk = group.find(chip => chip.trigger.type === 'talk')
+      const choice = group.find(chip => chip.trigger.type === 'choice')
+      const talkFirst = !!(talk && choice)
       const mark = document.createElement('div')
-      mark.className = `hotspotMark${shape.kind === 'circle' ? ' circle' : ''}${group.length === 1 ? ' single' : ''}`
+      mark.className = `hotspotMark${shape.kind === 'circle' ? ' circle' : ''}${group.length === 1 ? ' single' : ''}${talkFirst ? ' talk-first' : ''}`
       const box = bounds(shape)
       mark.style.left = `${box.x / canvas.w * 100}%`
       mark.style.top = `${box.y / canvas.h * 100}%`
       mark.style.width = `${box.w / canvas.w * 100}%`
       mark.style.height = `${box.h / canvas.h * 100}%`
+      const press = (chip: HotspotChip) => this.onClick(chip.trigger)
+      if (talkFirst && talk) {
+        mark.append(chipButton(talk, 'hotspot fill', press))
+      }
       const labels = document.createElement('div')
       labels.className = 'hotspotLabels'
       for (const chip of group) {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.className = 'hotspot'
-        button.dataset.triggerId = chip.trigger.id
-        button.textContent = chip.label
-        button.onclick = event => {
-          event.stopPropagation()
-          this.onClick(chip.trigger)
-        }
-        labels.append(button)
+        if (talkFirst && chip.trigger.id === talk?.trigger.id) continue
+        labels.append(chipButton(chip, 'hotspot', press))
       }
       mark.append(labels)
       this.layer.append(mark)
@@ -54,6 +53,19 @@ export class HotspotBoard {
   }
 
   clear() { this.layer.innerHTML = '' }
+}
+
+function chipButton(chip: HotspotChip, className: string, press: (chip: HotspotChip) => void) {
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = className
+  button.dataset.triggerId = chip.trigger.id
+  button.textContent = chip.label
+  button.onclick = event => {
+    event.stopPropagation()
+    press(chip)
+  }
+  return button
 }
 
 function bounds(shape: HotspotShape) {

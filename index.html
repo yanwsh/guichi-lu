@@ -1,4 +1,5 @@
 <!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>灯渡</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <style>html,body{margin:0;height:100%;background:#070605;overflow:hidden;font-family:serif}
 body{display:flex;align-items:center;justify-content:center}
 #app{position:relative;width:min(96vw,calc(96vh * 9 / 16));aspect-ratio:9/16;height:auto;overflow:hidden;border:6px solid #3a3a42;border-radius:22px;box-shadow:0 0 0 2px #000,0 10px 40px #000c;background:#100e0c;
@@ -48,7 +49,8 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 .hotspotLabels{position:absolute;left:6%;right:6%;top:6%;display:flex;flex-direction:column;gap:4px;pointer-events:none}
 .hotspotMark.single .hotspotLabels{inset:0}
 .hotspot{pointer-events:auto;border:1px solid rgba(232,215,168,.85);background:rgba(20,16,12,.78);color:#f4ecd8;font:inherit;font-size:1.7vh;padding:.4vh .7vh;border-radius:7px;line-height:1.25}
-.hotspotMark.single .hotspot{width:100%;height:100%;background:transparent;border:none;text-shadow:0 1px 3px #000,0 0 8px #000;font-size:2vh}
+.hotspotMark.single .hotspot,.hotspot.fill{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:none;text-shadow:0 1px 3px #000,0 0 8px #000;font-size:2vh;z-index:1}
+.hotspotMark.talk-first .hotspotLabels{z-index:2}
 #gateCard{position:absolute;inset:0;z-index:24;pointer-events:auto;background:#14120f;color:#f4ecd8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;text-align:center;padding:8vh;box-sizing:border-box}
 #gateCard.hidden{display:none!important}
 #gateCard h2{margin:0;letter-spacing:.4em;font-size:6vh;font-weight:normal}
@@ -70,6 +72,7 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 .portrait.leaving{opacity:0}
 .portrait.cutout{bottom:0;line-height:0}
 .portrait.cutout img{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 12px rgba(0,0,0,.38))}
+.portrait.cutout.glow img{filter:drop-shadow(0 0 10px rgba(255,236,200,.95)) drop-shadow(0 0 22px rgba(255,196,120,.8)) drop-shadow(0 8px 14px rgba(0,0,0,.45))}
 .portrait.card{top:12%;width:30%;aspect-ratio:3/4;border:2px solid rgba(232,215,168,.9);border-radius:12px;overflow:hidden;background:#1a1612;box-shadow:0 14px 28px rgba(0,0,0,.48)}
 .portrait.card img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
 #dialog.c01{left:var(--art-x);width:var(--art-w);right:auto;top:auto;bottom:calc(var(--frame-h) - var(--art-y) - var(--art-h));max-height:none;height:auto;background:none;border:none;box-shadow:none;padding:0;border-radius:0;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:auto}
