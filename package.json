@@ -5,15 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && npm run check && npm run check-c01-assets",
+    "build": "tsc && vite build && npm run check && npm run check-c01-assets && npm run check-3d",
     "preview": "vite preview",
     "check-c01": "node --experimental-strip-types scripts/check-c01.ts",
     "check-walk": "node --experimental-strip-types scripts/check-walk.ts",
     "check-c01-assets": "node --experimental-strip-types scripts/check-c01-assets.ts",
+    "check-3d": "node --experimental-strip-types scripts/check-3d-assets.ts",
     "check": "npm run check-c01 && npm run check-walk"
   },
   "dependencies": {
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "three-mesh-bvh": "^0.9.4"
   },
   "devDependencies": {
     "@types/three": "^0.187.0",

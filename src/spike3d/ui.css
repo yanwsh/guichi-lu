@@ -1,0 +1,18 @@
+#spikeRoot { position: absolute; inset: 0; touch-action: none; font-family: serif; color: #f4ecd8; }
+#spikeRoot canvas { display: block; width: 100%; height: 100%; }
+#spikeRoot .hidden { display: none !important; }
+#spikeZone { position: absolute; top: 14px; left: 14px; z-index: 3; background: rgba(0,0,0,.45); padding: 6px 10px; border-radius: 6px; font-size: 14px; letter-spacing: .12em; pointer-events: none; }
+#spikePerf { position: absolute; top: 14px; right: 14px; z-index: 4; background: rgba(0,0,0,.62); padding: 6px 8px; border-radius: 6px; font: 12px/1.45 ui-monospace, monospace; pointer-events: none; }
+#spikePerf .bad { color: #ff6d6d; }
+#spikeStick { position: absolute; left: 16px; bottom: 22px; width: 112px; height: 112px; z-index: 4; border-radius: 50%; background: rgba(0,0,0,.28); border: 1px solid rgba(232,215,168,.55); touch-action: none; }
+#spikeStick .knob { position: absolute; width: 42%; height: 42%; left: 50%; top: 50%; transform: translate(-50%,-50%); border-radius: 50%; background: rgba(244,236,216,.9); pointer-events: none; }
+#spikeAct { position: absolute; right: 18px; bottom: 78px; z-index: 4; min-width: 88px; font: inherit; font-size: 18px; padding: 10px 16px; color: #f4ecd8; background: rgba(28,22,16,.86); border: 1px solid #e8d7a8; border-radius: 10px; }
+#spikeDlg { position: absolute; left: 10px; right: 10px; bottom: 12px; z-index: 5; display: flex; gap: 10px; align-items: stretch; background: rgba(16,13,10,.94); border: 1px solid rgba(232,215,168,.55); border-radius: 12px; padding: 10px; pointer-events: auto; }
+#spikeDlg .face { width: 56px; height: 56px; flex: none; border-radius: 8px; object-fit: cover; background: #241c16; }
+#spikeDlg .face.empty { visibility: hidden; }
+#spikeDlg .dlgBody { flex: 1; min-width: 0; }
+#spikeDlg .who { color: #e8c27a; font-weight: bold; margin-bottom: 4px; }
+#spikeDlg .line { font-size: 16px; line-height: 1.45; }
+#spikeDlg .hint { text-align: right; opacity: .6; font-size: 12px; margin-top: 4px; }
+#spikeDlg .choices { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+#spikeDlg .choices button { font: inherit; color: #f4ecd8; background: #2a3b4acc; border: 1px solid #e8d7a8; border-radius: 8px; padding: 8px; }

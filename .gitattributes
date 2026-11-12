@@ -6,3 +6,9 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
+# 3D 样片资源走普通 blob。这个仓库丢过 LFS 对象，不要再把这些后缀送进 LFS。
+*.glb -text
+*.gltf -text
+*.ktx2 -text
+*.webp -text
+*.basis -text

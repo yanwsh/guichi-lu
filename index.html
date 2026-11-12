@@ -1,4 +1,5 @@
 <!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>灯渡</title>
+<script>if(new URLSearchParams(location.search).get('mode')==='3d')document.documentElement.classList.add('spike3d')</script>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <style>html,body{margin:0;height:100%;background:#070605;overflow:hidden;font-family:serif}
 body{display:flex;align-items:center;justify-content:center}
@@ -88,7 +89,11 @@ button{pointer-events:auto;font-size:3vh;padding:1.5vh 5vh;border:1px solid #e8d
 .shortOpTitle{font-size:3vh;letter-spacing:.2em}
 .shortOpHint,.shortOpToast{font-size:2.2vh;line-height:1.5}
 .shortOpToast{color:#e7a08c}
+html.spike3d,html.spike3d body{height:100%;background:#070605}
+html.spike3d body{display:block}
+html.spike3d #app{width:100%!important;height:100%!important;aspect-ratio:auto;border:none;border-radius:0;box-shadow:none}
+html.spike3d #app > :not(#spikeRoot){display:none!important}
 </style></head>
 <body><div id="app"><div id="title" class="ui"><h1 id="legacyTitle" class="dev-entry">《归迟录》</h1><div id="dengduTitle"><p>灯渡</p><h1>第一章 · 纸灯</h1></div><button id="enter" class="dev-entry" type="button">开始游戏</button><button id="continue" class="dev-entry hidden" style="margin-top:2vh" type="button">继续</button><button id="enterTown" class="dev-entry" style="margin-top:2vh" type="button">SC_03 可走桩</button><button id="enterC01" style="margin-top:2vh" type="button">第一章 · 纸灯</button></div>
 <div id="hud" class="ui hud hidden"><div id="hudText"></div><div id="battleLog" class="hidden"></div><div class="row"><div id="interacts" class="row" style="margin:0"></div><button id="next" class="hidden" type="button">前往下一场景</button><button id="attack" class="hidden" type="button">攻击</button><button id="retreat" class="hidden" type="button">撤退（返回场景）</button><button id="dbgBattle" class="dev-entry" type="button">调试 · 战斗桩</button></div></div><button id="mapBtn" class="hidden" type="button">地图</button><div id="map" class="hidden"><h2 id="mapTitle">第一章</h2><div id="mapSub">非主路径 · 暂停总览</div><div id="mapObj"></div><div id="mapNodes"></div><button id="mapClose" type="button">关闭</button></div><div id="locCard"></div><div id="reward" class="hidden"><h2>获得</h2><div id="rewardBody"></div><button id="rewardOk" type="button">收好，进镇</button></div><div id="endCard" class="hidden"><h2 id="endTitle">第一章 · 未完</h2><div id="endBody"></div><div class="row"><button id="endClose" type="button">关闭</button><button id="endContinue" type="button">继续</button></div></div><div id="zoneLabel" class="hidden"><span id="zoneName">山门前</span><small id="zoneObj"></small></div><div id="joystick" class="hidden"><div id="joyKnob"></div></div><button id="walkInteract" class="hidden" type="button">调查</button><div id="c01Banner" class="hidden"></div><div id="artBoard" class="hidden"><img id="sceneBg" alt=""><div id="hotspotLayer" class="hidden"></div></div><div id="cutaway" class="hidden"><img id="cutawayStill" alt=""></div><div id="portraitStage" class="hidden"></div><div id="gateCard" class="hidden"><div class="gateTitle"><p>灯渡</p><h2>第一章</h2><p>纸灯里有个人</p></div><button id="gateEnter" type="button">进入青蒲灯铺</button></div><div id="shortOp" class="hidden"></div><div id="dialogDim" class="hidden"></div><img id="talkPortrait" class="hidden" alt=""><div id="dialog" class="hidden"></div></div>
-<script type="module" src="/src/main.ts"></script></body></html>
+<script type="module" src="/src/boot.ts"></script></body></html>
