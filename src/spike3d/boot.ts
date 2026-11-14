@@ -1,7 +1,7 @@
 import './ui.css'
 import * as THREE from 'three'
 import { ANIM_GLB_PATH, boneCoverage, HERO_GLB_PATH, NPC_GLB_PATH } from './anim'
-import { createBloom, createLanternHalos, createSky, FOG_DENSITY, HORIZON, kelvinColor, LANTERN, sceneDraws } from './atmosphere'
+import { createBloom, createLanternHalos, createSky, DUSK, FOG_DENSITY, kelvinColor, LANTERN, sceneDraws } from './atmosphere'
 import { CameraRig } from './cameraRig'
 import { Collider } from './collision'
 import { FIGURE_TOP, Figure } from './figure'
@@ -57,12 +57,12 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.toneMappingExposure = 0.88
 renderer.shadowMap.enabled = profile.shadows
 renderer.shadowMap.type = THREE.PCFShadowMap
-renderer.setClearColor(HORIZON, 1)
+renderer.setClearColor(DUSK, 1)
 mount.prepend(renderer.domElement)
 const gpu = readGpuRenderer(renderer.getContext())
 
 const scene = new THREE.Scene()
-scene.fog = new THREE.FogExp2(HORIZON, FOG_DENSITY)
+scene.fog = new THREE.FogExp2(DUSK, FOG_DENSITY)
 scene.background = null
 scene.add(createSky())
 scene.add(new THREE.HemisphereLight(0x8e98c8, 0x2a2436, 0.82))
@@ -185,8 +185,10 @@ for (const lamp of active) {
   scene.add(light)
   pointLights.push({ light, color, position: lamp.position })
 }
+const halos: THREE.Sprite[] = []
 if (!profile.bloom) {
-  for (const sprite of createLanternHalos(hooks.lights.map(lamp => lamp.position), LANTERN)) scene.add(sprite)
+  halos.push(...createLanternHalos(hooks.lights.map(lamp => lamp.position), LANTERN))
+  for (const sprite of halos) scene.add(sprite)
 }
 
 await sessionPromise
@@ -322,7 +324,15 @@ renderer.setAnimationLoop(() => {
   const wishZ = -Math.sin(yaw) * sample.x + Math.cos(yaw) * sample.y
   const talking = session.dialogueOpen
   walker.update(dt, wishX, wishZ, body, clock.elapsedTime, talking)
-  rig.update(dt, walker.pos, walker.yaw, world.occluders)
+  const talkFocus = talking && session.activeKind === 'talk' ? { x: session.activeX, z: session.activeZ } : null
+  rig.update(dt, walker.pos, walker.yaw, world.occluders, talkFocus)
+  for (const sprite of halos) {
+    const dist = sprite.position.distanceTo(rig.camera.position)
+    const mat = sprite.material as THREE.SpriteMaterial
+    const gate = dist < 1.2 ? 0 : THREE.MathUtils.smoothstep(dist, 1.2, 2.5)
+    mat.opacity = gate * 0.32
+    sprite.visible = mat.opacity > 0.03
+  }
   rig.measure(walker.pos, walker.figure.fit?.maxY ?? FIGURE_TOP)
   const partner = talking && session.activeKind === 'talk'
   for (const npc of npcs) {

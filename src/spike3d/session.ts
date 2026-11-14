@@ -102,7 +102,7 @@ export class SpikeSession {
     this.activeZ = cue.z
     try {
       if (cue.kind === 'inspect' && target) this.lift(target, camera, cue.id)
-      await this.bar.play({ dialogue_id: cue.id, lines: cue.lines, choices: [] })
+      await this.bar.play({ dialogue_id: cue.id, lines: cue.lines.map(line => ({ ...line })), choices: [] })
     } finally {
       this.drop()
       this.busy = false

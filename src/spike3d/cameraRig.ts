@@ -42,15 +42,27 @@ export class CameraRig {
     this.camera.updateProjectionMatrix()
   }
 
-  update(dt: number, player: THREE.Vector3, playerYaw: number, occluders: THREE.Mesh[]) {
-    if (!this.booted) this.yaw = playerYaw
-    else {
-      const turn = Math.atan2(Math.sin(playerYaw - this.yaw), Math.cos(playerYaw - this.yaw))
-      this.yaw += turn * (1 - Math.exp(-4.5 * dt))
+  /**
+   * `talk` is the NPC feet while a conversation is open.
+   * The arm swings about 30° onto the shoulder that faces them, then eases back.
+   */
+  update(dt: number, player: THREE.Vector3, playerYaw: number, occluders: THREE.Mesh[], talk: { x: number, z: number } | null = null) {
+    let aim = playerYaw
+    if (talk) {
+      const to = Math.atan2(talk.x - player.x, talk.z - player.z)
+      const side = Math.sin(to - playerYaw)
+      const sign = Math.abs(side) < 0.08 ? 1 : Math.sign(side)
+      aim = playerYaw + sign * THREE.MathUtils.degToRad(32)
     }
-    this.look.set(player.x, LOOK_Y, player.z)
-    this.place(this.desired, DIST, PITCH)
-    this.resolve(this.desired)
+    if (!this.booted) this.yaw = aim
+    else {
+      const turn = Math.atan2(Math.sin(aim - this.yaw), Math.cos(aim - this.yaw))
+      this.yaw += turn * (1 - Math.exp(-5.5 * dt))
+    }
+    const pitch = talk ? THREE.MathUtils.degToRad(16) : PITCH
+    this.look.set(player.x, talk ? 1.28 : LOOK_Y, player.z)
+    this.place(this.desired, talk ? 3.4 : DIST, pitch)
+    this.resolve(this.desired, talk ? 3.4 : DIST, talk ? 1.8 : MIN_DIST, pitch)
     if (!this.booted) {
       this.camera.position.copy(this.desired)
       this.booted = true
@@ -90,9 +102,9 @@ export class CameraRig {
   }
 
   /** Duck under a beam before giving up distance. Never pitch outside 15–25°. */
-  private resolve(out: THREE.Vector3) {
-    let pitch = PITCH
-    let dist = DIST
+  private resolve(out: THREE.Vector3, reach: number, minDist = MIN_DIST, pitch0 = PITCH) {
+    let pitch = pitch0
+    let dist = reach
     for (let i = 0; i < 5; i++) {
       this.place(out, dist, pitch)
       this.delta.subVectors(out, this.look)
@@ -105,7 +117,7 @@ export class CameraRig {
         pitch = Math.max(PITCH_MIN, pitch - THREE.MathUtils.degToRad(1.5))
         continue
       }
-      dist = Math.max(MIN_DIST, hit - 0.28)
+      dist = Math.max(minDist, hit - 0.28)
     }
     this.place(out, dist, pitch)
     this.walls.pushOut(out, 0.16, this.look)
@@ -129,27 +141,73 @@ export class CameraRig {
     this.pitch = pitch
   }
 
+  private box = new THREE.Box3()
+  private segA = new THREE.Vector3()
+  private closest = new THREE.Vector3()
+  private along = new THREE.Vector3()
+
+  /** Lanterns, beams and eaves go to ≤30% when they sit on the lens or between camera and body. */
   private fade(occluders: THREE.Mesh[]) {
+    const faded = new Set<THREE.Material>()
     for (const mesh of occluders) {
-      const mat = mesh.material as THREE.MeshLambertMaterial
-      if (Array.isArray(mat)) continue
-      if (mat.userData.baseOpacity === undefined) mat.userData.baseOpacity = mat.opacity
-      mat.opacity = mat.userData.baseOpacity as number
-      mat.transparent = (mat.userData.baseOpacity as number) < 0.99
-      mat.depthWrite = !mat.transparent
+      const list = materialsOf(mesh)
+      for (const mat of list) {
+        if (mat.userData.baseOpacity === undefined) mat.userData.baseOpacity = mat.opacity
+        if (faded.has(mat)) continue
+        mat.opacity = mat.userData.baseOpacity as number
+        mat.transparent = (mat.userData.baseOpacity as number) < 0.99
+        mat.depthWrite = !mat.transparent
+      }
     }
     this.delta.subVectors(this.look, this.camera.position)
     const reach = this.delta.length()
-    if (reach < 0.2) return
-    this.ray.set(this.camera.position, this.delta.multiplyScalar(1 / reach))
-    this.ray.far = reach - 0.15
-    const hits = this.ray.intersectObjects(occluders, false)
-    for (const hit of hits) {
-      const mat = (hit.object as THREE.Mesh).material as THREE.MeshLambertMaterial
-      if (Array.isArray(mat)) continue
-      mat.transparent = true
-      mat.opacity = 0.22
-      mat.depthWrite = false
+    const dir = reach > 0.2 ? this.delta.multiplyScalar(1 / reach) : null
+    if (dir) {
+      this.ray.set(this.camera.position, dir)
+      this.ray.far = reach - 0.12
+    }
+    const hits = dir ? this.ray.intersectObjects(occluders, false) : []
+    const blocked = new Set(hits.map(hit => hit.object))
+    for (const mesh of occluders) {
+      mesh.updateWorldMatrix(true, false)
+      const near = this.meshDistance(mesh) < 1.2 || blocked.has(mesh) || this.blocksView(mesh)
+      if (!near) continue
+      for (const mat of materialsOf(mesh)) {
+        faded.add(mat)
+        mat.transparent = true
+        mat.opacity = Math.min(mat.opacity, 0.28)
+        mat.depthWrite = false
+      }
     }
   }
+
+  private meshDistance(mesh: THREE.Mesh): number {
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox()
+    const bounds = mesh.geometry.boundingBox
+    if (!bounds) return Infinity
+    this.box.copy(bounds).applyMatrix4(mesh.matrixWorld)
+    return this.box.distanceToPoint(this.camera.position)
+  }
+
+  /** Centre of the prop sits on the segment from the lens to the chest. */
+  private blocksView(mesh: THREE.Mesh): boolean {
+    this.segA.subVectors(this.look, this.camera.position)
+    const len2 = this.segA.lengthSq()
+    if (len2 < 0.05) return false
+    if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox()
+    const bounds = mesh.geometry.boundingBox
+    if (!bounds) return false
+    this.box.copy(bounds).applyMatrix4(mesh.matrixWorld)
+    this.box.getCenter(this.closest)
+    this.along.copy(this.closest).sub(this.camera.position)
+    const t = THREE.MathUtils.clamp(this.along.dot(this.segA) / len2, 0, 1)
+    this.along.copy(this.camera.position).addScaledVector(this.segA, t)
+    return t > 0.04 && t < 0.94 && this.along.distanceTo(this.closest) < 0.7
+  }
+}
+
+function materialsOf(mesh: THREE.Mesh): THREE.Material[] {
+  const mat = mesh.material
+  if (Array.isArray(mat)) return mat
+  return mat ? [mat] : []
 }

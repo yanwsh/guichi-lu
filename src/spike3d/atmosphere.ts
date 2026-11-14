@@ -8,7 +8,9 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 export const HORIZON = new THREE.Color(0xf2a06a)
 export const ZENITH = new THREE.Color(0x34366e)
 export const LANTERN = new THREE.Color(0xff890e)
-export const FOG_DENSITY = 0.031
+/** Single dusk fog. Art lock: FogExp2 density 0.022, one colour, no custom fog shader. */
+export const DUSK = new THREE.Color(0xc47b62)
+export const FOG_DENSITY = 0.022
 
 /** Tanner Helland approximation. 2000 K is the lantern practical. */
 export function kelvinColor(kelvin: number): THREE.Color {
@@ -153,11 +155,11 @@ export function createLanternHalos(positions: THREE.Vector3[], color: THREE.Colo
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.9,
+      opacity: 0.32,
     })
     const sprite = new THREE.Sprite(mat)
     sprite.position.copy(position)
-    sprite.scale.set(1.55, 1.55, 1)
+    sprite.scale.set(0.62, 0.62, 1)
     sprite.renderOrder = 3
     return sprite
   })
@@ -170,7 +172,7 @@ export function createLanternHalos(positions: THREE.Vector3[], color: THREE.Colo
 export function createBloom(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
   const composer = new EffectComposer(renderer)
   composer.addPass(new RenderPass(scene, camera))
-  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.18, 0.35, 1.15)
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.1, 0.28, 1.35)
   composer.addPass(bloom)
   composer.addPass(new OutputPass())
   return { composer, bloom }

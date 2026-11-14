@@ -92,6 +92,25 @@ export class Collider {
     this.dir.normalize()
     pos.copy(info.point).addScaledVector(this.dir, radius + 0.03)
   }
+
+  /**
+   * Capsule radius stays 0.25. When a wall is closer than radius+extra,
+   * shift the drawn body the rest of the way so sleeves clear the plaster.
+   */
+  visualOffset(pos: THREE.Vector3, extra: number, out: THREE.Vector3): void {
+    out.copy(pos)
+    this.capPoint.set(pos.x, 0.9, pos.z)
+    const info = this.bvh.closestPointToPoint(this.capPoint, this.hitInfo)
+    if (!info) return
+    const dx = pos.x - info.point.x
+    const dz = pos.z - info.point.z
+    const dist = Math.hypot(dx, dz)
+    const want = RADIUS + extra
+    if (dist >= want || dist < 1e-4) return
+    const scale = (want - dist) / dist
+    out.x += dx * scale
+    out.z += dz * scale
+  }
 }
 
 function positionsOnly(mesh: THREE.Mesh): THREE.BufferGeometry {

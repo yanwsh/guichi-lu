@@ -9,6 +9,7 @@ export class Walker {
   yaw = 0
   private vel = new THREE.Vector3()
   readonly figure: Figure
+  private skin = new THREE.Vector3()
 
   constructor(spawn: THREE.Vector3) {
     this.pos.copy(spawn)
@@ -38,7 +39,8 @@ export class Walker {
     if (speed > 0.2 && wishX * wishX + wishZ * wishZ > 0.04) {
       this.yaw = dampAngle(this.yaw, Math.atan2(this.vel.x, this.vel.z), 12, dt)
     }
-    this.figure.setPosition(this.pos.x, 0, this.pos.z)
+    collider.visualOffset(this.pos, 0.08, this.skin)
+    this.figure.setPosition(this.skin.x, 0, this.skin.z)
     this.figure.setYaw(this.yaw)
     this.figure.update(speed, dt, time, talking)
   }

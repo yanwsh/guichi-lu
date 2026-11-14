@@ -112,7 +112,7 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
 function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[]) {
   const street = new THREE.Group()
   street.name = 'STREET'
-  const stone = lit(mode, 0x8a90a4, streetLightmap(), 1.05, 0.42)
+  const stone = lit(mode, 0x8a90a4, streetLightmap(), 0.9, 0.42)
   const plaster = lit(mode, 0xc9bfb4, null)
   const timber = lit(mode, 0x4a3428, null)
   const river = lit(mode, 0x3a4d66, null, 0, 0.18)
@@ -121,7 +121,7 @@ function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.M
   slab.receiveShadow = true
   slab.userData.zone = 'street'
   street.add(slab)
-  const water = new THREE.Mesh(plane(28, 14, 4, -12), river)
+  const water = new THREE.Mesh(plane(40, 58, 0, -32), river)
   water.userData.zone = 'street'
   street.add(water)
   box(street, 'stone', plaster, 22, 0.9, 0.35, 5, 0.45, -3.55, 'COL_Bank')
@@ -137,7 +137,7 @@ function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.M
   for (const x of [-2.4, 2.6]) {
     box(street, 'post', timber, 0.14, 2.6, 0.14, x, 1.3, -1.7, `COL_Post_${x}`)
   }
-  hangLantern(street, mode, styled, occluders, 'LIGHT_Street_Eave', 0.2, 2.42, -1.25)
+  hangLantern(street, mode, styled, occluders, 'LIGHT_Street_Eave', 1.45, 2.42, -1.35)
   hangLantern(street, mode, styled, occluders, 'LIGHT_Street_Pharmacy', 7, 2.45, -1.35)
   box(street, 'stall', timber, 0.7, 0.72, 0.5, 7, 0.36, -1.45, 'COL_Pharmacy')
   anchor(street, 'INT_TR_C01_01_CHENG', 1.15, 0, -1.15, { radius_m: 1.5, role: 'talk' })
@@ -152,22 +152,24 @@ function farScenery(street: THREE.Group, mode: MatMode, styled: THREE.Material[]
   const stone = lit(mode, 0x6e6a78, null)
   const hull = lit(mode, 0x2e3438, null)
   styled.push(stone, hull)
-  for (const z of [-36.6, -37.5]) {
-    const arch = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.28, 5, 12, Math.PI), stone)
-    arch.position.set(2.2, 0, z)
+  // Content card v0.2: bridge and grain boat face the shop door. Not walkable, no triggers.
+  const bridgeZ = -44
+  for (const z of [bridgeZ - 0.8, bridgeZ + 0.8]) {
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(3.05, 0.26, 6, 18, Math.PI), stone)
+    arch.position.set(0, 0, z)
     arch.userData.zone = 'street'
     street.add(arch)
   }
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(8, 0.28, 1.6), stone)
-  deck.position.set(2.2, 3.15, -37)
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(7.4, 0.22, 2.4), stone)
+  deck.position.set(0, 3.02, bridgeZ)
   deck.userData.zone = 'street'
   street.add(deck)
-  const boat = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.45, 1.1), hull)
-  boat.position.set(6.4, 0.28, -28)
+  const boat = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.42, 1.15), hull)
+  boat.position.set(0, 0.24, -36)
   boat.userData.zone = 'street'
   street.add(boat)
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.8), hull)
-  cabin.position.set(6.2, 0.75, -28)
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.72, 0.85), hull)
+  cabin.position.set(-0.35, 0.72, -36)
   cabin.userData.zone = 'street'
   street.add(cabin)
 }
@@ -178,22 +180,53 @@ function placeAnchors(root: THREE.Group) {
 }
 
 function hangLantern(parent: THREE.Object3D, mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[], name: string, x: number, y: number, z: number) {
-  const glow = lit(mode, 0xffb060, null)
-  const mat = glow as THREE.MeshLambertMaterial
-  mat.emissive = LANTERN.clone()
-  mat.emissiveIntensity = mode === 'toon' ? 1.15 : 1.6
-  styled.push(glow)
-  const geo = new THREE.BoxGeometry(0.26, 0.34, 0.26)
-  ensureStyleUv(geo)
-  const mesh = new THREE.Mesh(geo, glow)
-  mesh.position.set(x, y, z)
-  mesh.userData.occluder = true
-  mesh.userData.zone = name.startsWith('LIGHT_Shop') ? 'shop' : 'street'
-  mesh.name = `${name}_mesh`
-  parent.add(mesh)
-  occluders.push(mesh)
-  colOnly(parent, `COL_CAM_${name}`, 0.42, 0.56, 0.42, x, y, z)
+  const group = new THREE.Group()
+  group.name = `${name}_mesh`
+  group.position.set(x, y, z)
+  const zone = name.startsWith('LIGHT_Shop') ? 'shop' : 'street'
+  const wood = new THREE.MeshLambertMaterial({ color: 0x4a301c, emissive: 0x2a1408, emissiveIntensity: 0.15 })
+  const capT = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.045, 12), wood)
+  capT.position.y = 0.2
+  const capB = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.085, 0.04, 12), wood)
+  capB.position.y = -0.18
+  const body = lanternBody(mode)
+  const finial = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.07, 6), wood)
+  finial.position.y = 0.25
+  group.add(capT, capB, body, finial)
+  for (const mesh of [capT, capB, body, finial]) {
+    mesh.userData.occluder = true
+    mesh.userData.zone = zone
+    mesh.castShadow = false
+    occluders.push(mesh)
+  }
+  parent.add(group)
+  colOnly(parent, `COL_CAM_${name}`, 0.28, 0.52, 0.28, x, y, z)
   anchor(parent, name, x, y, z, { color: '#ff890e', range_m: 5.5, kelvin: 2000 })
+  void styled
+}
+
+/** Oval paper shell: brighter at the belly, darker toward the wooden caps. */
+function lanternBody(mode: MatMode): THREE.Mesh {
+  const geo = new THREE.SphereGeometry(0.11, 16, 12)
+  const pos = geo.getAttribute('position')
+  const colors = new Float32Array(pos.count * 3)
+  for (let i = 0; i < pos.count; i++) {
+    const belly = 1 - Math.min(1, Math.abs(pos.getY(i) / 0.11) * 1.05)
+    const hot = 0.28 + belly * 0.72
+    colors[i * 3] = hot
+    colors[i * 3 + 1] = hot * 0.62
+    colors[i * 3 + 2] = hot * 0.18
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+  const mat = new THREE.MeshLambertMaterial({
+    color: 0xfff3dd,
+    emissive: LANTERN,
+    emissiveIntensity: mode === 'toon' ? 0.42 : 0.7,
+    vertexColors: true,
+  })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.scale.set(1, 1.42, 1)
+  return mesh
 }
 
 function makeBowl(mode: MatMode): THREE.Group {
