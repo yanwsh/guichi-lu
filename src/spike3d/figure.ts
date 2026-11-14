@@ -104,8 +104,25 @@ export class Figure {
     this.root.position.set(x, y, z)
   }
 
+  private yawNow = 0
+  private homeYaw = 0
+
   setYaw(yaw: number) {
+    this.yawNow = yaw
+    this.homeYaw = yaw
     this.root.rotation.y = yaw
+  }
+
+  /** Face a world point. About 0.3 s to settle (lambda 8). */
+  aimAt(x: number, z: number, dt: number) {
+    const target = Math.atan2(x - this.root.position.x, z - this.root.position.z)
+    this.yawNow = dampYaw(this.yawNow, target, 8, dt)
+    this.root.rotation.y = this.yawNow
+  }
+
+  relax(dt: number) {
+    this.yawNow = dampYaw(this.yawNow, this.homeYaw, 8, dt)
+    this.root.rotation.y = this.yawNow
   }
 
   update(speed: number, dt: number, time: number, talking = false) {
@@ -183,6 +200,11 @@ export class Figure {
     this.prevR.copy(this.footNowR)
     this.haveFeet = true
   }
+}
+
+function dampYaw(current: number, target: number, lambda: number, dt: number): number {
+  const delta = Math.atan2(Math.sin(target - current), Math.cos(target - current))
+  return current + delta * (1 - Math.exp(-lambda * dt))
 }
 
 function box(w: number, h: number, d: number, material: THREE.Material): THREE.Mesh {

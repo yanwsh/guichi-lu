@@ -50,7 +50,7 @@ function lit(mode: MatMode, color: number, lightMap: THREE.Texture | null, strea
 function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[]) {
   const shop = new THREE.Group()
   shop.name = 'SHOP'
-  const floorMat = lit(mode, 0x8a6244, shopLightmap())
+  const floorMat = lit(mode, 0xd2b48c, shopLightmap())
   const plaster = lit(mode, 0x6d5c4e, null)
   const wood = lit(mode, 0x4a3220, null)
   const warm = lit(mode, 0x6e4a2c, null)
@@ -64,7 +64,10 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   box(shop, 'plaster', plaster, 0.15, 3, 7.5, 2.825, 1.5, 3.75, 'COL_Wall_Right')
   box(shop, 'plaster', plaster, 1.85, 3, 0.15, -1.825, 1.5, 0.075, 'COL_Wall_FrontL')
   box(shop, 'plaster', plaster, 1.85, 3, 0.15, 1.825, 1.5, 0.075, 'COL_Wall_FrontR')
-  const lintelMat = lit(mode, 0x3a2a22, null)
+  const lintelMat = lit(mode, 0xb08a62, null)
+  const lintelLambert = lintelMat as THREE.MeshLambertMaterial
+  lintelLambert.emissive = new THREE.Color(0x6a4830)
+  lintelLambert.emissiveIntensity = 0.7
   styled.push(lintelMat)
   const lintel = box(shop, 'wood', lintelMat, 1.8, 0.6, 0.15, 0, 2.7, 0.075, 'COL_Wall_FrontLint')
   lintel.userData.occluder = true
@@ -73,15 +76,18 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   box(shop, 'wood', warm, 0.7, 0.8, 2.8, -1.7, 0.4, 3.2, 'COL_Worktable')
   box(shop, 'wood', warm, 1.2, 0.75, 0.8, 0.15, 0.375, 4.6, 'COL_TableDining')
   box(shop, 'wood', wood, 0.9, 2.6, 4, -2.3, 1.3, 5.35, 'COL_Stairs')
-  const ceilingGeo = new THREE.BoxGeometry(5.5, 0.12, 7.5)
-  ensureStyleUv(ceilingGeo)
-  const ceiling = new THREE.Mesh(ceilingGeo, new THREE.MeshBasicMaterial({ color: 0x2a221c }))
+  const ceilingMat = new THREE.MeshLambertMaterial({ color: 0xc4a078, emissive: 0xb88960, emissiveIntensity: 0.85 })
+  const ceiling = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.12, 7.5), ceilingMat)
   ceiling.position.set(0, 2.9, 3.75)
+  ceiling.receiveShadow = true
   ceiling.userData.zone = 'shop'
   shop.add(ceiling)
   box(shop, 'wood', wood, 2.4, 2.2, 0.34, 0.6, 1.2, 7.3, 'COL_Shelf')
   for (const z of [1.6, 3.6, 5.6]) {
-    const beamMat = lit(mode, 0x3a2a22, null)
+    const beamMat = lit(mode, 0x9a7048, null)
+    const beamLambert = beamMat as THREE.MeshLambertMaterial
+    beamLambert.emissive = new THREE.Color(0x5a3820)
+    beamLambert.emissiveIntensity = 0.55
     styled.push(beamMat)
     const beam = box(shop, 'beam', beamMat, 5.2, 0.14, 0.16, 0, 2.78, z)
     beam.userData.occluder = true
@@ -128,7 +134,10 @@ function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.M
   box(street, 'stone', plaster, 0.4, 2.2, 3.2, -6.2, 1.1, -1.9, 'COL_StreetWest')
   box(street, 'stone', plaster, 0.4, 2.2, 3.2, 16.2, 1.1, -1.9, 'COL_StreetEast')
   box(street, 'house', plaster, 8, 4.2, 3.2, 10.2, 2.1, 1.7, 'COL_ShopRow')
-  const eaveMat = lit(mode, 0x4a3428, null)
+  const eaveMat = lit(mode, 0xb08a62, null)
+  const eaveLambert = eaveMat as THREE.MeshLambertMaterial
+  eaveLambert.emissive = new THREE.Color(0x6a4830)
+  eaveLambert.emissiveIntensity = 0.7
   styled.push(eaveMat)
   const eave = box(street, 'eave', eaveMat, 6.4, 0.12, 2.3, 0.2, 2.68, -1.05)
   eave.userData.occluder = true

@@ -54,7 +54,7 @@ app.append(mount)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
 renderer.outputColorSpace = THREE.SRGBColorSpace
 renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 0.88
+renderer.toneMappingExposure = 1.32
 renderer.shadowMap.enabled = profile.shadows
 renderer.shadowMap.type = THREE.PCFShadowMap
 renderer.setClearColor(DUSK, 1)
@@ -65,8 +65,9 @@ const scene = new THREE.Scene()
 scene.fog = new THREE.FogExp2(DUSK, FOG_DENSITY)
 scene.background = null
 scene.add(createSky())
-scene.add(new THREE.HemisphereLight(0x8e98c8, 0x2a2436, 0.82))
-const sun = new THREE.DirectionalLight(0xc5d0ea, 0.5)
+scene.add(new THREE.AmbientLight(0x9a8876, 1.2))
+scene.add(new THREE.HemisphereLight(0xc9d4ea, 0x8d7860, 1.2))
+const sun = new THREE.DirectionalLight(0xd5dced, 0.72)
 sun.position.set(-6, 7, -12)
 scene.add(sun, sun.target)
 if (profile.shadows) {
@@ -175,7 +176,7 @@ for (const lamp of active) {
   const shopLamp = lamp.name.startsWith('LIGHT_Shop')
   const light = new THREE.PointLight(
     color,
-    mode === 'toon' ? (shopLamp ? 2.4 : 1.8) : (shopLamp ? 4 : 3),
+    mode === 'toon' ? (shopLamp ? 1.25 : 0.95) : (shopLamp ? 2.2 : 1.6),
     shopLamp ? 7.2 : 5.2,
     2,
   )
@@ -323,8 +324,8 @@ renderer.setAnimationLoop(() => {
   const wishX = Math.cos(yaw) * sample.x + Math.sin(yaw) * sample.y
   const wishZ = -Math.sin(yaw) * sample.x + Math.cos(yaw) * sample.y
   const talking = session.dialogueOpen
-  walker.update(dt, wishX, wishZ, body, clock.elapsedTime, talking)
   const talkFocus = talking && session.activeKind === 'talk' ? { x: session.activeX, z: session.activeZ } : null
+  walker.update(dt, wishX, wishZ, body, clock.elapsedTime, talking, talkFocus)
   rig.update(dt, walker.pos, walker.yaw, world.occluders, talkFocus)
   for (const sprite of halos) {
     const dist = sprite.position.distanceTo(rig.camera.position)
@@ -337,6 +338,8 @@ renderer.setAnimationLoop(() => {
   const partner = talking && session.activeKind === 'talk'
   for (const npc of npcs) {
     const near = partner && Math.hypot(npc.x - session.activeX, npc.z - session.activeZ) < 0.85
+    if (near) npc.fig.aimAt(walker.pos.x, walker.pos.z, dt)
+    else npc.fig.relax(dt)
     npc.fig.update(0, dt, clock.elapsedTime, near)
   }
   session.update(walker.pos.x, walker.pos.z, walker.yaw)

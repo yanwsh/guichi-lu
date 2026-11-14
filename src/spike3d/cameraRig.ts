@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Collider } from './collision'
 
-const PITCH = THREE.MathUtils.degToRad(20)
+const PITCH = THREE.MathUtils.degToRad(17)
 const PITCH_MIN = THREE.MathUtils.degToRad(15)
 const PITCH_MAX = THREE.MathUtils.degToRad(25)
 const DIST = 4.6
@@ -52,7 +52,7 @@ export class CameraRig {
       const to = Math.atan2(talk.x - player.x, talk.z - player.z)
       const side = Math.sin(to - playerYaw)
       const sign = Math.abs(side) < 0.08 ? 1 : Math.sign(side)
-      aim = playerYaw + sign * THREE.MathUtils.degToRad(32)
+      aim = to + sign * THREE.MathUtils.degToRad(18)
     }
     if (!this.booted) this.yaw = aim
     else {
@@ -60,9 +60,12 @@ export class CameraRig {
       this.yaw += turn * (1 - Math.exp(-5.5 * dt))
     }
     const pitch = talk ? THREE.MathUtils.degToRad(16) : PITCH
-    this.look.set(player.x, talk ? 1.28 : LOOK_Y, player.z)
-    this.place(this.desired, talk ? 3.4 : DIST, pitch)
-    this.resolve(this.desired, talk ? 3.4 : DIST, talk ? 1.8 : MIN_DIST, pitch)
+    const lookX = talk ? player.x * 0.4 + talk.x * 0.6 : player.x
+    const lookZ = talk ? player.z * 0.4 + talk.z * 0.6 : player.z
+    this.look.set(lookX, talk ? 1.42 : LOOK_Y, lookZ)
+    this.place(this.desired, talk ? 3.2 : DIST, pitch)
+    this.resolve(this.desired, talk ? 3.2 : DIST, talk ? 1.8 : MIN_DIST, pitch)
+    if (talk) this.keepBehind(player, talk)
     if (!this.booted) {
       this.camera.position.copy(this.desired)
       this.booted = true
@@ -86,6 +89,19 @@ export class CameraRig {
     this.framing.feet = feetV
     this.framing.height = Math.max(0, feetV - headV)
     this.framing.pitch = THREE.MathUtils.radToDeg(this.pitch)
+  }
+
+  /** A resolved arm that crosses in front of the player shows the NPC's back. Mirror it. */
+  private keepBehind(player: THREE.Vector3, talk: { x: number, z: number }) {
+    const tx = talk.x - player.x
+    const tz = talk.z - player.z
+    const cx = this.desired.x - player.x
+    const cz = this.desired.z - player.z
+    if (cx * tx + cz * tz <= 0) return
+    this.desired.x = player.x - cx
+    this.desired.z = player.z - cz
+    this.walls.pushOut(this.desired, 0.16, this.look)
+    this.enforcePitch(this.desired)
   }
 
   private place(out: THREE.Vector3, dist: number, pitch: number) {

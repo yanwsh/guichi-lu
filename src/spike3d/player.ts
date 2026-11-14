@@ -19,7 +19,7 @@ export class Walker {
     this.figure.setYaw(this.yaw)
   }
 
-  update(dt: number, wishX: number, wishZ: number, collider: Collider, time: number, talking = false) {
+  update(dt: number, wishX: number, wishZ: number, collider: Collider, time: number, talking = false, face: { x: number, z: number } | null = null) {
     const mag = Math.min(1, Math.hypot(wishX, wishZ))
     const cruise = cruiseSpeed(mag)
     const nx = mag > 1e-4 ? wishX / mag : 0
@@ -36,7 +36,9 @@ export class Walker {
     collider.resolve(this.pos)
     if (Math.abs(this.pos.z - prevZ - this.vel.z * dt) > 0.001) this.vel.z *= 0.15
     const speed = Math.hypot(this.vel.x, this.vel.z)
-    if (speed > 0.2 && wishX * wishX + wishZ * wishZ > 0.04) {
+    if (face) {
+      this.yaw = dampAngle(this.yaw, Math.atan2(face.x - this.pos.x, face.z - this.pos.z), 8, dt)
+    } else if (speed > 0.2 && wishX * wishX + wishZ * wishZ > 0.04) {
       this.yaw = dampAngle(this.yaw, Math.atan2(this.vel.x, this.vel.z), 12, dt)
     }
     collider.visualOffset(this.pos, 0.08, this.skin)

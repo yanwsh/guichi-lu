@@ -89,38 +89,32 @@ float hash21(vec2 p) {
       .replace('#include <map_fragment>', `#include <map_fragment>
 	diffuseColor.rgb *= texture2D(uLightMap, vStyleUv).rgb;
 	float insideShop = smoothstep(-0.15, 0.55, vWorldPos.z) * (1.0 - smoothstep(2.65, 3.15, abs(vWorldPos.x)));
-	vec3 grade = mix(vec3(0.78, 0.84, 1.05), vec3(1.08, 0.90, 0.70), insideShop);
+	vec3 grade = mix(vec3(0.82, 0.88, 1.06), vec3(1.0, 0.96, 0.9), insideShop);
 	diffuseColor.rgb *= grade;`)
       .replace('#include <opaque_fragment>', `vec3 streak = vec3(0.0);
 	if (uStreak > 0.0) {
-		vec3 toEye = uCam - vWorldPos;
-		float eyeLen = max(length(toEye), 0.001);
-		float viewY = abs(toEye.y / eyeLen);
-		float stretch = mix(2.35, 0.42, smoothstep(0.12, 0.82, viewY));
 		for (int i = 0; i < 4; i++) {
 			vec2 delta = vWorldPos.xz - uLamps[i].xz;
-			float radial = length(delta);
 			vec2 toCam = uCam.xz - uLamps[i].xz;
 			float span = length(toCam);
 			vec2 axis = span > 0.001 ? toCam / span : vec2(0.0, -1.0);
 			float along = dot(delta, axis);
-			float side = delta.x * axis.y - delta.y * axis.x;
-			float band = exp(-side * side * 48.0) * exp(-max(along, 0.0) * (0.18 / stretch));
-			float ahead = smoothstep(0.02, 0.45 * stretch, along);
-			float notBlob = smoothstep(0.45, 1.15, radial);
+			float side = abs(delta.x * axis.y - delta.y * axis.x);
+			float band = exp(-(side * side) / 0.02);
+			float farEnd = max(span - along, 0.0);
+			float fall = exp(-max(farEnd - 0.55, 0.0) * 0.22);
+			float ahead = smoothstep(0.3, 0.85, along);
 			float stand = smoothstep(0.28, 1.2, length(uPlayer.xz - uLamps[i].xz));
-			float fine = hash21(vWorldPos.xz * 3.1 + float(i) * 1.7);
-			float nick = hash21(vWorldPos.xz * 1.15 + vec2(4.2, 1.3));
-			float soft = 0.58 + 0.42 * fine;
-			float brk = smoothstep(0.12, 0.72, nick);
-			streak += uLampColor[i] * band * ahead * notBlob * mix(0.2, 1.0, stand) * soft * mix(0.35, 1.0, brk);
+			float nick = hash21(vec2(floor(along * 2.5), side * 6.0));
+			float brk = mix(0.78, 1.0, nick);
+			streak += uLampColor[i] * band * fall * ahead * mix(0.4, 1.0, stand) * brk;
 		}
 	}
-	outgoingLight += streak * uStreak * 0.85;
+	outgoingLight += streak * uStreak * 0.55;
 	#include <opaque_fragment>`)
   }
   const previous = mat.customProgramCacheKey?.bind(mat)
-  mat.customProgramCacheKey = () => `${previous ? previous() : ''}|style-v3|${mat.userData.streak ?? 0}|${lightMap.uuid}`
+  mat.customProgramCacheKey = () => `${previous ? previous() : ''}|style-v4|${mat.userData.streak ?? 0}|${lightMap.uuid}`
 }
 
 export function updateStyleLights(mats: THREE.Material[], camera: THREE.Vector3, player: THREE.Vector3, lamps: { position: THREE.Vector3, color: THREE.Color }[]) {
@@ -172,18 +166,16 @@ export function restyleMesh(mesh: THREE.Mesh, mode: MatMode) {
 /** 512² shop floor. uv v = 1 is the door (z = 0). Warm pools under the lanterns, cool spill at the threshold. */
 export function shopLightmap(): THREE.CanvasTexture {
   return canvasLight([
-    { u: 0.5, v: 0.76, color: '#ff8a22', radius: 0.26, strength: 1 },
-    { u: 0.28, v: 0.55, color: '#ff9a3c', radius: 0.22, strength: 0.95 },
-    { u: 0.5, v: 0.97, color: '#6d82b8', radius: 0.2, strength: 0.85 },
-  ], 0.98, 0.78, 0.52)
+    { u: 0.5, v: 0.76, color: '#f0d0b0', radius: 0.22, strength: 0.26 },
+    { u: 0.28, v: 0.55, color: '#ecd0b4', radius: 0.18, strength: 0.2 },
+    { u: 0.5, v: 0.97, color: '#9aacc8', radius: 0.18, strength: 0.45 },
+  ], 1, 0.94, 0.84)
 }
 
 /** Street plane: u along +X, v = 0 at the shop wall (z ≈ -0.3), v = 1 toward the river. */
 export function streetLightmap(): THREE.CanvasTexture {
   return canvasLight([
-    { u: 0.34, v: 0.33, color: '#ff8a30', radius: 0.14, strength: 1 },
-    { u: 0.59, v: 0.33, color: '#ff7a28', radius: 0.12, strength: 0.95 },
-  ], 0.46, 0.50, 0.68)
+  ], 0.62, 0.64, 0.72)
 }
 
 function canvasLight(spots: { u: number, v: number, color: string, radius: number, strength: number }[], br = 0.92, bg = 0.86, bb = 0.78): THREE.CanvasTexture {
