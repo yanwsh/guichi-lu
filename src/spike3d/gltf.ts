@@ -24,6 +24,7 @@ export interface LightAnchor {
   position: THREE.Vector3
   color: string
   range: number
+  kelvin?: number
 }
 
 export interface InteractAnchor {
@@ -139,8 +140,9 @@ export function readHooks(root: THREE.Object3D): SceneHooks {
       hooks.lights.push({
         name,
         position: obj.getWorldPosition(new THREE.Vector3()),
-        color: extra.color ?? '#ffb35c',
-        range: extra.range_m ?? 4.5,
+        color: extra.color ?? '#ff890e',
+        range: extra.range_m ?? 5.5,
+        kelvin: extra.kelvin,
       })
     } else if (name === 'SPAWN_player' || name === 'REF_Spawn') {
       hooks.spawn.copy(obj.getWorldPosition(new THREE.Vector3()))
@@ -157,6 +159,81 @@ export function readHooks(root: THREE.Object3D): SceneHooks {
 }
 
 /** +Z yaw is 0. Positive yaw turns toward +X. */
+/** Optional rig. A missing file is the blocky placeholder, not an error. */
+export async function loadCharacterGlb(renderer: THREE.WebGLRenderer, url: string): Promise<{ scene: THREE.Group, clips: THREE.AnimationClip[] } | null> {
+  let res: Response
+  try {
+    res = await fetch(url)
+  } catch (err) {
+    console.warn('hero glb skipped', err)
+    return null
+  }
+  if (!res.ok) return null
+  const buf = await res.arrayBuffer()
+  const magic = new Uint8Array(buf, 0, 4)
+  const isGlb = magic[0] === 0x67 && magic[1] === 0x6c && magic[2] === 0x54 && magic[3] === 0x46
+  if (!isGlb) return null
+  await MeshoptDecoder.ready
+  const loader = new GLTFLoader()
+  loader.setMeshoptDecoder(MeshoptDecoder)
+  const ktx2 = new KTX2Loader()
+  ktx2.detectSupport(renderer)
+  loader.setKTX2Loader(ktx2)
+  try {
+    const gltf = await loader.parseAsync(buf, url.slice(0, url.lastIndexOf('/') + 1))
+    return { scene: gltf.scene, clips: gltf.animations }
+  } catch (err) {
+    console.warn('hero glb unreadable', err)
+    return null
+  } finally {
+    ktx2.dispose()
+  }
+}
+
+/** Each NPC needs its own skeleton. Three's clone shares the source bones. */
+export function cloneSkinned(source: THREE.Object3D): THREE.Object3D {
+  const clone = source.clone(true)
+  const srcMeshes: THREE.SkinnedMesh[] = []
+  source.traverse(obj => {
+    const mesh = obj as THREE.SkinnedMesh
+    if (mesh.isSkinnedMesh) srcMeshes.push(mesh)
+  })
+  const bones = new Map<string, THREE.Bone>()
+  const meshes: THREE.SkinnedMesh[] = []
+  clone.traverse(obj => {
+    const bone = obj as THREE.Bone
+    if (bone.isBone) bones.set(bone.name, bone)
+    const mesh = obj as THREE.SkinnedMesh
+    if (mesh.isSkinnedMesh) meshes.push(mesh)
+  })
+  meshes.forEach((mesh, i) => {
+    const src = srcMeshes[i]
+    const ordered = src.skeleton.bones.map(bone => {
+      const next = bones.get(bone.name)
+      if (!next) throw new Error(`3d spike: cloned rig is missing ${bone.name}`)
+      return next
+    })
+    mesh.bind(new THREE.Skeleton(ordered, src.skeleton.boneInverses), mesh.bindMatrix)
+    const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+    const cloned = list.map(mat => mat.clone())
+    mesh.material = Array.isArray(mesh.material) ? cloned : cloned[0]
+  })
+  return clone
+}
+
+export function tintMeshes(root: THREE.Object3D, color: number) {
+  const tint = new THREE.Color(color)
+  root.traverse(obj => {
+    const mesh = obj as THREE.Mesh
+    if (!mesh.isMesh) return
+    const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+    for (const mat of list) {
+      const colored = mat as THREE.MeshStandardMaterial
+      if (colored.color) colored.color.multiply(tint)
+    }
+  })
+}
+
 export function yawFromFacing(facing: string): number {
   if (facing === '+X') return Math.PI / 2
   if (facing === '-X') return -Math.PI / 2

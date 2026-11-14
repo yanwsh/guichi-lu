@@ -1,8 +1,7 @@
 import * as THREE from 'three'
+import { cruiseSpeed } from './anim.ts'
 import { Collider } from './collision.ts'
 import { Figure } from './figure.ts'
-
-const WALK = 1.7
 
 /** Capsule feet stay on the ground. `wish` is a camera-relative stick in world XZ, length at most 1. */
 export class Walker {
@@ -19,9 +18,13 @@ export class Walker {
     this.figure.setYaw(this.yaw)
   }
 
-  update(dt: number, wishX: number, wishZ: number, collider: Collider, time: number) {
-    this.vel.x = THREE.MathUtils.damp(this.vel.x, wishX * WALK, 10, dt)
-    this.vel.z = THREE.MathUtils.damp(this.vel.z, wishZ * WALK, 10, dt)
+  update(dt: number, wishX: number, wishZ: number, collider: Collider, time: number, talking = false) {
+    const mag = Math.min(1, Math.hypot(wishX, wishZ))
+    const cruise = cruiseSpeed(mag)
+    const nx = mag > 1e-4 ? wishX / mag : 0
+    const nz = mag > 1e-4 ? wishZ / mag : 0
+    this.vel.x = THREE.MathUtils.damp(this.vel.x, nx * cruise, 8, dt)
+    this.vel.z = THREE.MathUtils.damp(this.vel.z, nz * cruise, 8, dt)
     const prevX = this.pos.x
     const prevZ = this.pos.z
     this.pos.x += this.vel.x * dt
@@ -37,7 +40,7 @@ export class Walker {
     }
     this.figure.setPosition(this.pos.x, 0, this.pos.z)
     this.figure.setYaw(this.yaw)
-    this.figure.update(speed, dt, time)
+    this.figure.update(speed, dt, time, talking)
   }
 }
 

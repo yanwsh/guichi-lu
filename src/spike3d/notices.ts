@@ -23,4 +23,9 @@ export const THIRD_PARTY = [
     holder: 'Binomial LLC',
     use: 'KTX2 textures. KTX2Loader loads the transcoder shipped inside the three package.',
   },
+  {
+    name: 'Quaternius Universal Animation Library',
+    license: 'CC0',
+    use: 'In-place idle/walk/talk/run, retargeted offline onto a Mixamo-style skeleton with no mixamorig: prefix. License: public/assets/3d/_third_party/quaternius_UAL/License.txt.',
+  },
 ] as const

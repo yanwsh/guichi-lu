@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { MeshBVH, type HitPointInfo } from 'three-mesh-bvh'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 
-const RADIUS = 0.22
+const RADIUS = 0.25
 const HEIGHT = 1.58
 
 /** Static COL_* meshes baked into one BVH. The player is a vertical capsule; the camera raycasts the same tree. */

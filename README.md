@@ -67,6 +67,10 @@ npm run dev
 - 严二：收下杉木 / 分期延后 / 只留张欠条。
 - 做完 C01-03 停在灯铺。不进灯街起火、火后、战斗桩。
 
+## 3D 样片
+
+竖屏样片在 `3d.html`（`?mat=toon`，`?q=low|mid`，`?perf=1` 在正式包里打开性能面板）。角色动画来自 Quaternius Universal Animation Library（CC0），由 3D 美术离线重定向到无 `mixamorig:` 前缀的骨架，clip 名为 idle / walk / talk / run，原地。许可证全文：`public/assets/3d/_third_party/quaternius_UAL/License.txt`。
+
 ## 文档
 
 - 设计草稿：`Docs/模块与存档接口.md`、`Docs/美术替换接口.md`、`Docs/配置表通路.md`

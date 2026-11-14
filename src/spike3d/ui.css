@@ -1,8 +1,8 @@
 #spikeRoot { position: absolute; inset: 0; touch-action: none; font-family: serif; color: #f4ecd8; }
 #spikeRoot canvas { display: block; width: 100%; height: 100%; }
 #spikeRoot .hidden { display: none !important; }
-#spikeZone { position: absolute; top: 14px; left: 14px; z-index: 3; background: rgba(0,0,0,.45); padding: 6px 10px; border-radius: 6px; font-size: 14px; letter-spacing: .12em; pointer-events: none; }
-#spikePerf { position: absolute; top: 14px; right: 14px; z-index: 4; background: rgba(0,0,0,.62); padding: 6px 8px; border-radius: 6px; font: 12px/1.45 ui-monospace, monospace; pointer-events: none; }
+#spikeZone { position: absolute; top: 10px; left: 10px; z-index: 3; max-width: 42vw; background: rgba(0,0,0,.45); padding: 6px 10px; border-radius: 6px; font-size: 14px; letter-spacing: .12em; pointer-events: none; }
+#spikePerf { position: absolute; top: 10px; right: 10px; z-index: 4; width: min(210px, 52vw); max-height: calc(100% - 210px); overflow: hidden; background: rgba(8,6,8,.74); border: 1px solid rgba(232,215,168,.35); padding: 7px 8px; border-radius: 8px; font: 13px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; pointer-events: none; word-break: break-word; overflow-wrap: anywhere; }
 #spikePerf .bad { color: #ff6d6d; }
 #spikeStick { position: absolute; left: 16px; bottom: 22px; width: 112px; height: 112px; z-index: 4; border-radius: 50%; background: rgba(0,0,0,.28); border: 1px solid rgba(232,215,168,.55); touch-action: none; }
 #spikeStick .knob { position: absolute; width: 42%; height: 42%; left: 50%; top: 50%; transform: translate(-50%,-50%); border-radius: 50%; background: rgba(244,236,216,.9); pointer-events: none; }

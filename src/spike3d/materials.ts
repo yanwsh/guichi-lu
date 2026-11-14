@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { HORIZON, ZENITH } from './atmosphere'
 
 export type MatMode = 'toon' | 'pbr'
 
@@ -62,11 +63,12 @@ export function createStyleMaterial(mode: MatMode, opts: StyleOptions = {}): THR
 function patchStyle(mat: THREE.Material, lightMap: THREE.Texture) {
   mat.onBeforeCompile = shader => {
     shader.uniforms.uLightMap = { value: lightMap }
-    shader.uniforms.uFogA = { value: new THREE.Color(0xc4b4c8) }
-    shader.uniforms.uFogB = { value: new THREE.Color(0x6678aa) }
+    shader.uniforms.uHorizon = { value: HORIZON }
+    shader.uniforms.uZenith = { value: ZENITH }
     shader.uniforms.uCam = { value: new THREE.Vector3() }
+    shader.uniforms.uPlayer = { value: new THREE.Vector3() }
     shader.uniforms.uLamps = { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] }
-    shader.uniforms.uLampColor = { value: [new THREE.Color(0xffb35c), new THREE.Color(0xffb35c), new THREE.Color(0xffb35c), new THREE.Color(0xffb35c)] }
+    shader.uniforms.uLampColor = { value: [new THREE.Color(0xff890e), new THREE.Color(0xff890e), new THREE.Color(0xff890e), new THREE.Color(0xff890e)] }
     shader.uniforms.uStreak = { value: mat.userData.streak ?? 0 }
     mat.userData.shader = shader
     shader.vertexShader = shader.vertexShader
@@ -77,44 +79,67 @@ function patchStyle(mat: THREE.Material, lightMap: THREE.Texture) {
 varying vec3 vWorldPos;
 varying vec2 vStyleUv;
 uniform sampler2D uLightMap;
-uniform vec3 uFogA;
-uniform vec3 uFogB;
+uniform vec3 uHorizon;
+uniform vec3 uZenith;
 uniform vec3 uCam;
+uniform vec3 uPlayer;
 uniform vec3 uLamps[4];
 uniform vec3 uLampColor[4];
-uniform float uStreak;`)
+uniform float uStreak;
+float hash21(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
-	diffuseColor.rgb *= texture2D(uLightMap, vStyleUv).rgb;`)
+	diffuseColor.rgb *= texture2D(uLightMap, vStyleUv).rgb;
+	float insideShop = smoothstep(-0.15, 0.55, vWorldPos.z) * (1.0 - smoothstep(2.65, 3.15, abs(vWorldPos.x)));
+	vec3 grade = mix(vec3(0.78, 0.84, 1.05), vec3(1.08, 0.90, 0.70), insideShop);
+	diffuseColor.rgb *= grade;`)
       .replace('#include <opaque_fragment>', `vec3 streak = vec3(0.0);
 	if (uStreak > 0.0) {
+		vec3 toEye = uCam - vWorldPos;
+		float eyeLen = max(length(toEye), 0.001);
+		float viewY = abs(toEye.y / eyeLen);
+		float stretch = mix(2.35, 0.42, smoothstep(0.12, 0.82, viewY));
 		for (int i = 0; i < 4; i++) {
 			vec2 delta = vWorldPos.xz - uLamps[i].xz;
+			float radial = length(delta);
 			vec2 toCam = uCam.xz - uLamps[i].xz;
 			float span = length(toCam);
 			vec2 axis = span > 0.001 ? toCam / span : vec2(0.0, -1.0);
 			float along = dot(delta, axis);
-			float side = abs(delta.x * axis.y - delta.y * axis.x);
-			float band = exp(-side * side * 36.0) * exp(-max(along, 0.0) * 0.16);
-			streak += uLampColor[i] * band * smoothstep(-0.05, 0.4, along);
+			float side = delta.x * axis.y - delta.y * axis.x;
+			float band = exp(-side * side * 64.0) * exp(-max(along, 0.0) * (0.24 / stretch));
+			float ahead = smoothstep(0.05, 0.55 * stretch, along);
+			float notBlob = smoothstep(0.55, 1.25, radial);
+			float stand = smoothstep(0.28, 1.2, length(uPlayer.xz - uLamps[i].xz));
+			vec2 cell = floor(vec2(along * 2.2 / stretch, side * 6.0));
+			float broken = smoothstep(0.22, 0.58, hash21(cell + float(i) * 1.7));
+			float nick = step(0.38, hash21(cell.yx - 2.4));
+			streak += uLampColor[i] * band * ahead * notBlob * mix(0.12, 1.0, stand) * broken * (0.45 + 0.55 * nick);
 		}
 	}
 	outgoingLight += streak * uStreak;
 	#include <opaque_fragment>`)
       .replace('#include <fog_fragment>', `#ifdef USE_FOG
+	vec3 fogDir = normalize(vWorldPos - uCam);
+	float skyT = smoothstep(-0.05, 0.22, fogDir.y);
+	vec3 skyCol = mix(uHorizon, uZenith, skyT);
 	float fogFactor = 1.0 - exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
-	vec3 fogGrad = mix(uFogA, uFogB, clamp(vFogDepth / 32.0, 0.0, 1.0));
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fogGrad, fogFactor);
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, skyCol, fogFactor);
 #endif`)
   }
   const previous = mat.customProgramCacheKey?.bind(mat)
-  mat.customProgramCacheKey = () => `${previous ? previous() : ''}|style|${mat.userData.streak ?? 0}|${lightMap.uuid}`
+  mat.customProgramCacheKey = () => `${previous ? previous() : ''}|style-v2|${mat.userData.streak ?? 0}|${lightMap.uuid}`
 }
 
-export function updateStyleLights(mats: THREE.Material[], camera: THREE.Vector3, lamps: { position: THREE.Vector3, color: THREE.Color }[]) {
+export function updateStyleLights(mats: THREE.Material[], camera: THREE.Vector3, player: THREE.Vector3, lamps: { position: THREE.Vector3, color: THREE.Color }[]) {
   for (const mat of mats) {
     const shader = mat.userData.shader as { uniforms: Record<string, { value: unknown }> } | undefined
     if (!shader) continue
     ;(shader.uniforms.uCam.value as THREE.Vector3).copy(camera)
+    ;(shader.uniforms.uPlayer.value as THREE.Vector3).copy(player)
     const positions = shader.uniforms.uLamps.value as THREE.Vector3[]
     const colors = shader.uniforms.uLampColor.value as THREE.Color[]
     for (let i = 0; i < 4; i++) {
@@ -155,22 +180,21 @@ export function restyleMesh(mesh: THREE.Mesh, mode: MatMode) {
   mesh.material = next
 }
 
-/** 512² shop floor: warm pools under the two lanterns, cool spill at the door (uv v = 1). */
+/** 512² shop floor. uv v = 1 is the door (z = 0). Warm pools under the lanterns, cool spill at the threshold. */
 export function shopLightmap(): THREE.CanvasTexture {
-  const tex = canvasLight([
-    { u: 0.5, v: 0.76, color: '#ffb35c', radius: 0.22, strength: 1 },
-    { u: 0.28, v: 0.55, color: '#ffc48a', radius: 0.18, strength: 0.9 },
-    { u: 0.5, v: 0.96, color: '#8aa4d0', radius: 0.28, strength: 0.55 },
-  ])
-  return tex
+  return canvasLight([
+    { u: 0.5, v: 0.76, color: '#ff8a22', radius: 0.26, strength: 1 },
+    { u: 0.28, v: 0.55, color: '#ff9a3c', radius: 0.22, strength: 0.95 },
+    { u: 0.5, v: 0.97, color: '#6d82b8', radius: 0.2, strength: 0.85 },
+  ], 0.98, 0.78, 0.52)
 }
 
-/** Street plane uv: u along +X, v = 1 at the shop wall (z ≈ 0). */
+/** Street plane: u along +X, v = 0 at the shop wall (z ≈ -0.3), v = 1 toward the river. */
 export function streetLightmap(): THREE.CanvasTexture {
   return canvasLight([
-    { u: 0.28, v: 0.82, color: '#ffb060', radius: 0.12, strength: 1 },
-    { u: 0.59, v: 0.78, color: '#ff9860', radius: 0.1, strength: 0.85 },
-  ], 0.78, 0.76, 0.82)
+    { u: 0.28, v: 0.30, color: '#ff8a30', radius: 0.14, strength: 1 },
+    { u: 0.59, v: 0.33, color: '#ff7a28', radius: 0.12, strength: 0.95 },
+  ], 0.46, 0.50, 0.68)
 }
 
 function canvasLight(spots: { u: number, v: number, color: string, radius: number, strength: number }[], br = 0.92, bg = 0.86, bb = 0.78): THREE.CanvasTexture {

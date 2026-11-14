@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { LANTERN, createRiverMist } from './atmosphere'
 import { createStyleMaterial, ensureStyleUv, shopLightmap, streetLightmap, type MatMode } from './materials'
 
 export interface Built {
@@ -24,7 +25,9 @@ export function buildWorld(mode: MatMode, shop: THREE.Object3D | null): Built {
     shop.userData.zone = 'shop'
     root.add(shop)
   }
-  root.add(buildStreet(mode, styled, occluders))
+  const street = buildStreet(mode, styled, occluders)
+  street.add(createRiverMist())
+  root.add(street)
   const bowl = makeBowl(mode)
   bowl.position.set(0.55, 0.86, 4.45)
   bowl.userData.zone = 'shop'
@@ -48,7 +51,7 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   const shop = new THREE.Group()
   shop.name = 'SHOP'
   const floorMat = lit(mode, 0x8a6244, shopLightmap())
-  const plaster = lit(mode, 0xd8d0c2, null)
+  const plaster = lit(mode, 0x6d5c4e, null)
   const wood = lit(mode, 0x4a3220, null)
   const warm = lit(mode, 0x6e4a2c, null)
   styled.push(floorMat, plaster, wood, warm)
@@ -61,16 +64,25 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   box(shop, 'plaster', plaster, 0.15, 3, 7.5, 2.825, 1.5, 3.75, 'COL_Wall_Right')
   box(shop, 'plaster', plaster, 1.85, 3, 0.15, -1.825, 1.5, 0.075, 'COL_Wall_FrontL')
   box(shop, 'plaster', plaster, 1.85, 3, 0.15, 1.825, 1.5, 0.075, 'COL_Wall_FrontR')
-  box(shop, 'wood', wood, 1.8, 0.6, 0.15, 0, 2.7, 0.075, 'COL_Wall_FrontLint')
+  const lintelMat = lit(mode, 0x3a2a22, null)
+  styled.push(lintelMat)
+  const lintel = box(shop, 'wood', lintelMat, 1.8, 0.6, 0.15, 0, 2.7, 0.075, 'COL_Wall_FrontLint')
+  lintel.userData.occluder = true
+  occluders.push(lintel)
   box(shop, 'wood', warm, 0.6, 0.85, 2.4, 1.45, 0.425, 2, 'COL_Counter')
   box(shop, 'wood', warm, 0.7, 0.8, 2.8, -1.7, 0.4, 3.2, 'COL_Worktable')
   box(shop, 'wood', warm, 1.2, 0.75, 0.8, 0.15, 0.375, 4.6, 'COL_TableDining')
   box(shop, 'wood', wood, 0.9, 2.6, 4, -2.3, 1.3, 5.35, 'COL_Stairs')
-  box(shop, 'plaster', plaster, 5.5, 0.12, 7.5, 0, 2.9, 3.75)
+  const ceilingGeo = new THREE.BoxGeometry(5.5, 0.12, 7.5)
+  ensureStyleUv(ceilingGeo)
+  const ceiling = new THREE.Mesh(ceilingGeo, new THREE.MeshBasicMaterial({ color: 0x2a221c }))
+  ceiling.position.set(0, 2.9, 3.75)
+  ceiling.userData.zone = 'shop'
+  shop.add(ceiling)
   box(shop, 'wood', wood, 2.4, 2.2, 0.34, 0.6, 1.2, 7.3, 'COL_Shelf')
-  const beamMat = lit(mode, 0x3a2a22, null)
-  styled.push(beamMat)
   for (const z of [1.6, 3.6, 5.6]) {
+    const beamMat = lit(mode, 0x3a2a22, null)
+    styled.push(beamMat)
     const beam = box(shop, 'beam', beamMat, 5.2, 0.14, 0.16, 0, 2.78, z)
     beam.userData.occluder = true
     occluders.push(beam)
@@ -100,10 +112,10 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
 function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[]) {
   const street = new THREE.Group()
   street.name = 'STREET'
-  const stone = lit(mode, 0x8a8178, streetLightmap(), 1.55, 0.55)
+  const stone = lit(mode, 0x8a90a4, streetLightmap(), 1.05, 0.42)
   const plaster = lit(mode, 0xc9bfb4, null)
   const timber = lit(mode, 0x4a3428, null)
-  const river = lit(mode, 0x3d5168, null, 0.85, 0.18)
+  const river = lit(mode, 0x3a4d66, null, 0, 0.18)
   styled.push(stone, plaster, timber, river)
   const slab = new THREE.Mesh(plane(22, 3.2, 5, -1.9), stone)
   slab.receiveShadow = true
@@ -116,7 +128,9 @@ function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.M
   box(street, 'stone', plaster, 0.4, 2.2, 3.2, -6.2, 1.1, -1.9, 'COL_StreetWest')
   box(street, 'stone', plaster, 0.4, 2.2, 3.2, 16.2, 1.1, -1.9, 'COL_StreetEast')
   box(street, 'house', plaster, 8, 4.2, 3.2, 10.2, 2.1, 1.7, 'COL_ShopRow')
-  const eave = box(street, 'eave', timber, 6.4, 0.12, 2.3, 0.2, 2.68, -1.05)
+  const eaveMat = lit(mode, 0x4a3428, null)
+  styled.push(eaveMat)
+  const eave = box(street, 'eave', eaveMat, 6.4, 0.12, 2.3, 0.2, 2.68, -1.05)
   eave.userData.occluder = true
   occluders.push(eave)
   colOnly(street, 'COL_CAM_Eave', 6.4, 0.16, 2.3, 0.2, 2.68, -1.05)
@@ -164,22 +178,22 @@ function placeAnchors(root: THREE.Group) {
 }
 
 function hangLantern(parent: THREE.Object3D, mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[], name: string, x: number, y: number, z: number) {
-  const glow = lit(mode, 0xffc48a, null)
+  const glow = lit(mode, 0xffb060, null)
   const mat = glow as THREE.MeshLambertMaterial
-  mat.emissive?.set?.(0xff6a1a)
-  if ('emissive' in mat) {
-    mat.emissive = new THREE.Color(0xff6a1a)
-    mat.emissiveIntensity = mode === 'toon' ? 0.8 : 2.4
-  }
+  mat.emissive = LANTERN.clone()
+  mat.emissiveIntensity = mode === 'toon' ? 1.15 : 1.6
   styled.push(glow)
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.34, 0.26), glow)
+  const geo = new THREE.BoxGeometry(0.26, 0.34, 0.26)
+  ensureStyleUv(geo)
+  const mesh = new THREE.Mesh(geo, glow)
   mesh.position.set(x, y, z)
   mesh.userData.occluder = true
   mesh.userData.zone = name.startsWith('LIGHT_Shop') ? 'shop' : 'street'
   mesh.name = `${name}_mesh`
   parent.add(mesh)
   occluders.push(mesh)
-  anchor(parent, name, x, y, z, { color: '#ffb35c', range_m: 4.5, kelvin: 2000 })
+  colOnly(parent, `COL_CAM_${name}`, 0.42, 0.56, 0.42, x, y, z)
+  anchor(parent, name, x, y, z, { color: '#ff890e', range_m: 5.5, kelvin: 2000 })
 }
 
 function makeBowl(mode: MatMode): THREE.Group {

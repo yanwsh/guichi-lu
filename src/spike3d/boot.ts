@@ -1,12 +1,15 @@
 import './ui.css'
 import * as THREE from 'three'
-import { Figure } from './figure'
+import { ANIM_GLB_PATH, boneCoverage, HERO_GLB_PATH, NPC_GLB_PATH } from './anim'
+import { createBloom, createLanternHalos, createSky, FOG_DENSITY, HORIZON, kelvinColor, LANTERN, sceneDraws } from './atmosphere'
 import { CameraRig } from './cameraRig'
 import { Collider } from './collision'
-import { loadSceneGlb, measureShop, readHooks, yawFromFacing } from './gltf'
+import { FIGURE_TOP, Figure } from './figure'
+import { cloneSkinned, loadCharacterGlb, loadSceneGlb, measureShop, readHooks, tintMeshes, yawFromFacing } from './gltf'
 import { Stick } from './input'
 import { maxTextureSize, resolveMat, updateStyleLights, type MatMode } from './materials'
 import { THIRD_PARTY } from './notices'
+import { FrameWindow, readGpuRenderer } from './perf'
 import { Walker } from './player'
 import { pixelRatioFor, resolveQuality } from './quality'
 import { SpikeSession } from './session'
@@ -30,7 +33,7 @@ zoneEl.id = 'spikeZone'
 const perfEl = document.createElement('div')
 perfEl.id = 'spikePerf'
 if (!showPerf) perfEl.classList.add('hidden')
-const perfRows = ['tier', 'draw', 'shop', 'street', 'tex', 'fps'].map(id => {
+const perfRows = ['tier', 'fps', 'p95', 'draw', 'tri', 'shop', 'street', 'tex', 'px', 'gpu'].map(id => {
   const row = document.createElement('div')
   row.dataset.key = id
   perfEl.append(row)
@@ -51,16 +54,19 @@ app.append(mount)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
 renderer.outputColorSpace = THREE.SRGBColorSpace
 renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 1.05
+renderer.toneMappingExposure = 0.88
 renderer.shadowMap.enabled = profile.shadows
 renderer.shadowMap.type = THREE.PCFShadowMap
+renderer.setClearColor(HORIZON, 1)
 mount.prepend(renderer.domElement)
+const gpu = readGpuRenderer(renderer.getContext())
 
 const scene = new THREE.Scene()
-scene.fog = new THREE.FogExp2(0x6a78a4, 0.028)
-scene.background = new THREE.Color(0x6678aa)
-scene.add(new THREE.HemisphereLight(0xb7c6e4, 0x3a3050, 1.15))
-const sun = new THREE.DirectionalLight(0xffc4a0, 1.35)
+scene.fog = new THREE.FogExp2(HORIZON, FOG_DENSITY)
+scene.background = null
+scene.add(createSky())
+scene.add(new THREE.HemisphereLight(0x8e98c8, 0x2a2436, 0.82))
+const sun = new THREE.DirectionalLight(0xc5d0ea, 0.5)
 sun.position.set(-6, 7, -12)
 scene.add(sun, sun.target)
 if (profile.shadows) {
@@ -101,6 +107,18 @@ const walls = new Collider(world.root, 'camera')
 const walker = new Walker(hooks.spawn)
 walker.yaw = yawFromFacing(hooks.facing)
 walker.figure.setYaw(walker.yaw)
+const base = import.meta.env.BASE_URL
+const heroPromise = loadCharacterGlb(renderer, `${base}${HERO_GLB_PATH}`)
+const npcPromise = loadCharacterGlb(renderer, `${base}${NPC_GLB_PATH}`)
+const animPromise = loadCharacterGlb(renderer, `${base}${ANIM_GLB_PATH}`)
+const session = new SpikeSession()
+const sessionPromise = session.start(dlgEl, hooks.interacts)
+const [hero, npcBody, animFile] = await Promise.all([heroPromise, npcPromise, animPromise])
+const externalClips = animFile?.clips ?? []
+if (hero && !walker.figure.useHero(hero.scene, hero.clips)) {
+  console.info('3d spike: hero file has no idle/walk/talk/run clips, blocky body stays')
+}
+const heroCover = hero ? boneCoverage(walker.figure.root, externalClips) : { tracks: 0, hit: 0, missing: [] as string[] }
 walker.figure.root.traverse(obj => {
   const mesh = obj as THREE.Mesh
   if (mesh.isMesh) mesh.castShadow = profile.shadows
@@ -120,17 +138,23 @@ blob.position.y = 0.03
 blob.visible = !profile.shadows
 scene.add(blob)
 
-const npcs: Figure[] = []
+const npcs: { fig: Figure, x: number, z: number }[] = []
 const npcSpec = [
-  { name: 'YanGui', color: 0x6a5348, fallback: new THREE.Vector3(0.85, 0, 2), facing: '-X' },
-  { name: 'LiangSuniang', color: 0x5c6a78, fallback: new THREE.Vector3(0.95, 0, 4.6), facing: '-Z' },
-  { name: 'Cheng', color: 0x7a5a48, fallback: new THREE.Vector3(1.15, 0, -1.35), facing: '+Z' },
-  { name: 'He', color: 0x4e5a48, fallback: new THREE.Vector3(7.45, 0, -1.15), facing: '-X' },
+  { name: 'YanGui', color: 0xe7b498, fallback: new THREE.Vector3(0.85, 0, 2), facing: '-X' },
+  { name: 'LiangSuniang', color: 0xb7c0e4, fallback: new THREE.Vector3(0.95, 0, 4.6), facing: '-Z' },
+  { name: 'Cheng', color: 0xf0d2a4, fallback: new THREE.Vector3(1.15, 0, -1.35), facing: '+Z' },
+  { name: 'He', color: 0xa9c4a4, fallback: new THREE.Vector3(7.45, 0, -1.15), facing: '-X' },
 ]
+let npcCover = { tracks: 0, hit: 0, missing: [] as string[] }
 for (const spec of npcSpec) {
   const found = hooks.npcs.find(npc => npc.name === spec.name)
   const fig = new Figure(spec.color)
   const pos = found?.position ?? spec.fallback
+  if (npcBody && externalClips.length) {
+    const body = cloneSkinned(npcBody.scene)
+    tintMeshes(body, spec.color)
+    if (!fig.useHero(body, externalClips)) console.info('3d spike: external clips did not bind', spec.name)
+  }
   fig.setPosition(pos.x, 0, pos.z)
   fig.setYaw(yawFromFacing(found?.facing ?? spec.facing))
   fig.root.traverse(obj => {
@@ -138,24 +162,34 @@ for (const spec of npcSpec) {
     if (mesh.isMesh) mesh.castShadow = false
   })
   scene.add(fig.root)
-  npcs.push(fig)
+  npcs.push({ fig, x: pos.x, z: pos.z })
 }
+if (npcs[0]) npcCover = boneCoverage(npcs[0].fig.root, externalClips)
 
 const lampOrder = ['LIGHT_Shop_Lantern_01', 'LIGHT_Street_Eave', 'LIGHT_Shop_Lantern_02', 'LIGHT_Street_Pharmacy']
 const sorted = [...hooks.lights].sort((a, b) => rank(a.name, lampOrder) - rank(b.name, lampOrder))
 const active = sorted.slice(0, profile.pointLights)
 const pointLights: { light: THREE.PointLight, color: THREE.Color, position: THREE.Vector3 }[] = []
 for (const lamp of active) {
-  const color = new THREE.Color(lamp.color)
-  const light = new THREE.PointLight(color, mode === 'toon' ? 28 : 36, lamp.range, 2)
+  const color = lamp.kelvin ? kelvinColor(lamp.kelvin) : new THREE.Color(lamp.color)
+  const shopLamp = lamp.name.startsWith('LIGHT_Shop')
+  const light = new THREE.PointLight(
+    color,
+    mode === 'toon' ? (shopLamp ? 2.4 : 1.8) : (shopLamp ? 4 : 3),
+    shopLamp ? 7.2 : 5.2,
+    2,
+  )
   light.position.copy(lamp.position)
+  light.position.y -= 0.55
   light.castShadow = false
   scene.add(light)
   pointLights.push({ light, color, position: lamp.position })
 }
+if (!profile.bloom) {
+  for (const sprite of createLanternHalos(hooks.lights.map(lamp => lamp.position), LANTERN)) scene.add(sprite)
+}
 
-const session = new SpikeSession()
-await session.start(dlgEl, hooks.interacts)
+await sessionPromise
 const targets = new Map<string, THREE.Object3D>([
   ['TR_C01_03_BOWL_WEAR', world.bowl],
   ['TR_C01_01_PRICE', world.lamp],
@@ -163,6 +197,7 @@ const targets = new Map<string, THREE.Object3D>([
 const rig = new CameraRig(walls)
 rig.yaw = walker.yaw
 scene.add(rig.camera)
+const bloom = profile.bloom ? createBloom(renderer, scene, rig.camera) : null
 const stick = new Stick(stickEl, () => { void usePrompt() })
 actEl.addEventListener('click', event => {
   event.stopPropagation()
@@ -194,6 +229,10 @@ function resize() {
   renderer.setPixelRatio(pixelRatioFor(profile))
   renderer.setSize(width, height, false)
   rig.resize(width, height)
+  if (bloom) {
+    bloom.composer.setPixelRatio(renderer.getPixelRatio())
+    bloom.composer.setSize(width, height)
+  }
 }
 addEventListener('resize', resize)
 resize()
@@ -201,6 +240,7 @@ resize()
 const shopTris = countZone(world.root, 'shop')
 const streetTris = countZone(world.root, 'street')
 const shopMeasure = shop ? measureShop(shop) : null
+const frameWindow = new FrameWindow()
 
 const api = {
   ready: false,
@@ -216,11 +256,29 @@ const api = {
   prompt: null as string | null,
   promptId: null as string | null,
   fps: 0,
+  avg10: 0,
+  p95: 0,
   draws: 0,
   triangles: 0,
   shopTris,
   streetTris,
   texture: 0,
+  gpu,
+  anim: 'idle',
+  animMode: walker.figure.animMode,
+  slide: 0,
+  fit: null as null | { minY: number, maxY: number, minX: number, maxX: number, minZ: number, maxZ: number },
+  clips: {
+    hero: hero ? 'embedded' : 'fallback',
+    npc: externalClips.length ? 'external' : 'fallback',
+    heroTracks: heroCover.tracks,
+    heroHit: heroCover.hit,
+    npcTracks: npcCover.tracks,
+    npcHit: npcCover.hit,
+    heroMissing: heroCover.missing.slice(0, 8),
+    npcMissing: npcCover.missing.slice(0, 8),
+  },
+  frame: { pitch: 0, height: 0, feet: 0, head: 0 },
   hold: null as null | { x: number, y: number, z: number, parent: string },
   shopMeasure,
   licenses: THIRD_PARTY,
@@ -250,58 +308,65 @@ function usePrompt() {
   void session.interact(id ? targets.get(id) ?? null : null, rig.camera)
 }
 
-let frames = 0
-let fpsAcc = 0
-let fps = 0
 const clock = new THREE.Clock()
 const holdPoint = new THREE.Vector3()
+const sky = scene.getObjectByName('SKY')
 renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05)
-  rig.talking = session.dialogueOpen
+  const raw = clock.getDelta()
+  const dt = Math.min(raw, 0.05)
+  frameWindow.push(clock.elapsedTime, raw)
   if (session.dialogueOpen) stick.reset()
   const sample = session.dialogueOpen ? { x: 0, y: 0 } : stick.sample()
   const yaw = rig.yaw
   const wishX = Math.cos(yaw) * sample.x + Math.sin(yaw) * sample.y
   const wishZ = -Math.sin(yaw) * sample.x + Math.cos(yaw) * sample.y
-  walker.update(dt, wishX, wishZ, body, clock.elapsedTime)
+  const talking = session.dialogueOpen
+  walker.update(dt, wishX, wishZ, body, clock.elapsedTime, talking)
   rig.update(dt, walker.pos, walker.yaw, world.occluders)
-  for (const npc of npcs) npc.update(0, dt, clock.elapsedTime)
+  rig.measure(walker.pos, walker.figure.fit?.maxY ?? FIGURE_TOP)
+  const partner = talking && session.activeKind === 'talk'
+  for (const npc of npcs) {
+    const near = partner && Math.hypot(npc.x - session.activeX, npc.z - session.activeZ) < 0.85
+    npc.fig.update(0, dt, clock.elapsedTime, near)
+  }
   session.update(walker.pos.x, walker.pos.z, walker.yaw)
   blob.position.x = walker.pos.x
   blob.position.z = walker.pos.z
+  if (sky) sky.position.copy(rig.camera.position)
   if (profile.shadows) {
     sun.position.set(walker.pos.x - 5, 7.5, walker.pos.z - 8)
     sun.target.position.set(walker.pos.x, 0.8, walker.pos.z)
     sun.target.updateMatrixWorld()
   }
-  updateStyleLights(world.styled, rig.camera.position, pointLights.map(item => ({ position: item.position, color: item.color })))
+  updateStyleLights(
+    world.styled,
+    rig.camera.position,
+    walker.pos,
+    pointLights.map(item => ({ position: item.position, color: item.color })),
+  )
   const zone = walker.pos.z > 0.2 ? '青蒲灯铺' : walker.pos.x < 3.2 && walker.pos.z > -2.2 ? '檐下' : '镇街'
   zoneEl.textContent = zone
-  const talking = session.dialogueOpen
   actEl.classList.toggle('hidden', talking || !session.prompt)
   stickEl.classList.toggle('hidden', talking)
   if (session.prompt) {
     actEl.textContent = session.prompt.word
     actEl.dataset.trigger = session.prompt.id
   } else delete actEl.dataset.trigger
-  renderer.render(scene, rig.camera)
-  frames += 1
-  fpsAcc += dt
-  if (fpsAcc >= 0.4) {
-    fps = frames / fpsAcc
-    frames = 0
-    fpsAcc = 0
-  }
-  const draws = renderer.info.render.calls
-  const triangles = renderer.info.render.triangles
+  const drawn = sceneDraws(renderer, scene, rig.camera, bloom?.composer ?? null)
+  const summary = frameWindow.summary()
   const tex = maxTextureSize()
   if (showPerf) {
-    setRow(perfRows[0], `档位 ${profile.tier}  ${mode}`, false)
-    setRow(perfRows[1], `draw ${draws} / ${BUDGET.draws}`, draws > BUDGET.draws)
-    setRow(perfRows[2], `铺内 ${shopTris} / ${BUDGET.shop}`, shopTris > BUDGET.shop)
-    setRow(perfRows[3], `镇街 ${streetTris} / ${BUDGET.street}`, streetTris > BUDGET.street)
-    setRow(perfRows[4], `贴图 ${tex} / ${BUDGET.texture}`, tex > BUDGET.texture)
-    setRow(perfRows[5], `fps ${fps.toFixed(0)}  px ${renderer.getPixelRatio().toFixed(2)}`, false)
+    const tier = profile.tier === 'low' ? '低档' : '中档'
+    setRow(perfRows[0], `${tier} ${mode}`, false)
+    setRow(perfRows[1], `fps ${summary.fps.toFixed(0)}  均10秒 ${summary.avg10.toFixed(0)}`, false)
+    setRow(perfRows[2], `p95 ${summary.p95ms.toFixed(1)} ms`, false)
+    setRow(perfRows[3], `draw ${drawn.draws} / ${BUDGET.draws}`, drawn.draws > BUDGET.draws)
+    setRow(perfRows[4], `三角 ${drawn.triangles}`, false)
+    setRow(perfRows[5], `铺内 ${Math.round(shopTris)} / ${BUDGET.shop}`, shopTris > BUDGET.shop)
+    setRow(perfRows[6], `镇街 ${Math.round(streetTris)} / ${BUDGET.street}`, streetTris > BUDGET.street)
+    setRow(perfRows[7], `贴图 ${tex} / ${BUDGET.texture}`, tex > BUDGET.texture)
+    setRow(perfRows[8], `px ${renderer.getPixelRatio().toFixed(2)}`, false)
+    setRow(perfRows[9], `GPU ${gpu || '不可用'}`, false)
   }
   api.ready = true
   api.pixelRatio = renderer.getPixelRatio()
@@ -312,10 +377,17 @@ renderer.setAnimationLoop(() => {
   api.dialogueText = session.dialogueText
   api.prompt = session.prompt?.word ?? null
   api.promptId = session.prompt?.id ?? null
-  api.fps = fps
-  api.draws = draws
-  api.triangles = triangles
+  api.fps = summary.fps
+  api.avg10 = summary.avg10
+  api.p95 = summary.p95ms
+  api.draws = drawn.draws
+  api.triangles = drawn.triangles
   api.texture = tex
+  api.anim = walker.figure.state
+  api.animMode = walker.figure.animMode
+  api.slide = walker.figure.slide
+  api.fit = walker.figure.fit
+  api.frame = { ...rig.framing }
   if (session.holding) {
     const held = session.holding.getWorldPosition(holdPoint)
     api.hold = { x: held.x, y: held.y, z: held.z, parent: session.holding.parent?.type ?? '' }

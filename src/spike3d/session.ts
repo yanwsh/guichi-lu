@@ -26,6 +26,9 @@ const SPEC: { id: string, dialogue: string, kind: 'talk' | 'inspect', radius: nu
 export class SpikeSession {
   cues: Cue[] = []
   prompt: Cue | null = null
+  activeKind: 'talk' | 'inspect' | null = null
+  activeX = 0
+  activeZ = 0
   busy = false
   holding: THREE.Object3D | null = null
   private bar: DialogueBar | null = null
@@ -94,12 +97,16 @@ export class SpikeSession {
     const cue = this.prompt
     this.busy = true
     this.prompt = null
+    this.activeKind = cue.kind
+    this.activeX = cue.x
+    this.activeZ = cue.z
     try {
       if (cue.kind === 'inspect' && target) this.lift(target, camera, cue.id)
       await this.bar.play({ dialogue_id: cue.id, lines: cue.lines, choices: [] })
     } finally {
       this.drop()
       this.busy = false
+      this.activeKind = null
     }
   }
 
