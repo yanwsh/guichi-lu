@@ -180,6 +180,8 @@ for (const spec of npcSpec) {
   npcs.push({ fig, x: pos.x, z: pos.z })
 }
 if (npcs[0]) npcCover = boneCoverage(npcs[0].fig.root, externalClips)
+if (heroCover.missing.length) console.warn('3d spike: hero clip tracks did not bind', `${heroCover.hit}/${heroCover.tracks}`, heroCover.missing.slice(0, 6))
+if (npcCover.missing.length) console.warn('3d spike: npc clip tracks did not bind', `${npcCover.hit}/${npcCover.tracks}`, npcCover.missing.slice(0, 6))
 
 const lampOrder = ['LIGHT_Shop_Lantern_01', 'LIGHT_Street_Eave', 'LIGHT_Shop_Lantern_02', 'LIGHT_Street_Pharmacy']
 const sorted = [...hooks.lights].sort((a, b) => rank(a.name, lampOrder) - rank(b.name, lampOrder))

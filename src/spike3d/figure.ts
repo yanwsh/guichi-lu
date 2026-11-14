@@ -91,6 +91,12 @@ export class Figure {
       mesh.castShadow = true
       mesh.receiveShadow = true
       mesh.frustumCulled = false
+      // Outline lives in _OUTLINE_NORMAL, not COLOR_0. Vertex colors would tint the cloth.
+      const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+      for (const mat of list) {
+        const colored = mat as THREE.MeshStandardMaterial
+        if (colored) colored.vertexColors = false
+      }
     })
     for (const mesh of this.blocky) mesh.visible = false
     this.root.add(scene)
