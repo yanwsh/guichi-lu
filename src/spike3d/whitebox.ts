@@ -67,7 +67,7 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   const lintelMat = lit(mode, 0xb08a62, null)
   const lintelLambert = lintelMat as THREE.MeshLambertMaterial
   lintelLambert.emissive = new THREE.Color(0x6a4830)
-  lintelLambert.emissiveIntensity = 0.7
+  lintelLambert.emissiveIntensity = 0.46
   styled.push(lintelMat)
   const lintel = box(shop, 'wood', lintelMat, 1.8, 0.6, 0.15, 0, 2.7, 0.075, 'COL_Wall_FrontLint')
   lintel.userData.occluder = true
@@ -76,7 +76,7 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   box(shop, 'wood', warm, 0.7, 0.8, 2.8, -1.7, 0.4, 3.2, 'COL_Worktable')
   box(shop, 'wood', warm, 1.2, 0.75, 0.8, 0.15, 0.375, 4.6, 'COL_TableDining')
   box(shop, 'wood', wood, 0.9, 2.6, 4, -2.3, 1.3, 5.35, 'COL_Stairs')
-  const ceilingMat = new THREE.MeshLambertMaterial({ color: 0xc4a078, emissive: 0xb88960, emissiveIntensity: 0.85 })
+  const ceilingMat = new THREE.MeshLambertMaterial({ color: 0x9a7048, emissive: 0x6a4830, emissiveIntensity: 0.5 })
   const ceiling = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.12, 7.5), ceilingMat)
   ceiling.position.set(0, 2.9, 3.75)
   ceiling.receiveShadow = true
@@ -87,7 +87,7 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
     const beamMat = lit(mode, 0x9a7048, null)
     const beamLambert = beamMat as THREE.MeshLambertMaterial
     beamLambert.emissive = new THREE.Color(0x5a3820)
-    beamLambert.emissiveIntensity = 0.55
+    beamLambert.emissiveIntensity = 0.36
     styled.push(beamMat)
     const beam = box(shop, 'beam', beamMat, 5.2, 0.14, 0.16, 0, 2.78, z)
     beam.userData.occluder = true
@@ -137,7 +137,7 @@ function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.M
   const eaveMat = lit(mode, 0xb08a62, null)
   const eaveLambert = eaveMat as THREE.MeshLambertMaterial
   eaveLambert.emissive = new THREE.Color(0x6a4830)
-  eaveLambert.emissiveIntensity = 0.7
+  eaveLambert.emissiveIntensity = 0.46
   styled.push(eaveMat)
   const eave = box(street, 'eave', eaveMat, 6.4, 0.12, 2.3, 0.2, 2.68, -1.05)
   eave.userData.occluder = true
@@ -230,7 +230,7 @@ function lanternBody(mode: MatMode): THREE.Mesh {
   const mat = new THREE.MeshLambertMaterial({
     color: 0xfff3dd,
     emissive: LANTERN,
-    emissiveIntensity: mode === 'toon' ? 0.42 : 0.7,
+    emissiveIntensity: mode === 'toon' ? 0.62 : 0.85,
     vertexColors: true,
   })
   const mesh = new THREE.Mesh(geo, mat)

@@ -166,10 +166,10 @@ export function restyleMesh(mesh: THREE.Mesh, mode: MatMode) {
 /** 512² shop floor. uv v = 1 is the door (z = 0). Warm pools under the lanterns, cool spill at the threshold. */
 export function shopLightmap(): THREE.CanvasTexture {
   return canvasLight([
-    { u: 0.5, v: 0.76, color: '#f0d0b0', radius: 0.22, strength: 0.26 },
-    { u: 0.28, v: 0.55, color: '#ecd0b4', radius: 0.18, strength: 0.2 },
-    { u: 0.5, v: 0.97, color: '#9aacc8', radius: 0.18, strength: 0.45 },
-  ], 1, 0.94, 0.84)
+    { u: 0.5, v: 0.76, color: '#f2c49a', radius: 0.16, strength: 0.88 },
+    { u: 0.28, v: 0.55, color: '#e8b48a', radius: 0.12, strength: 0.7 },
+    { u: 0.5, v: 0.97, color: '#8aa0c4', radius: 0.13, strength: 0.48 },
+  ], 0.78, 0.7, 0.58)
 }
 
 /** Street plane: u along +X, v = 0 at the shop wall (z ≈ -0.3), v = 1 toward the river. */

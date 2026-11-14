@@ -25,6 +25,20 @@ const profile = resolveQuality(location.search)
 const mode: MatMode = resolveMat(location.search)
 const showPerf = params.get('perf') === '1'
 const shopGlb = params.get('shop') === 'glb'
+/** Tuned between the round-3 dusk and the round-4 beige wash. Override on device with ?exp= and ?amb=. */
+const DEFAULT_EXP = 1.28
+const DEFAULT_AMB = 1.2
+
+function queryNumber(name: string, fallback: number): number {
+  const raw = params.get(name)
+  if (raw == null || raw.trim() === '') return fallback
+  const value = Number(raw)
+  if (!Number.isFinite(value)) return fallback
+  return Math.min(4, Math.max(0, value))
+}
+
+const exposure = queryNumber('exp', DEFAULT_EXP)
+const ambient = queryNumber('amb', DEFAULT_AMB)
 
 const mount = document.createElement('div')
 mount.id = 'spikeRoot'
@@ -33,7 +47,7 @@ zoneEl.id = 'spikeZone'
 const perfEl = document.createElement('div')
 perfEl.id = 'spikePerf'
 if (!showPerf) perfEl.classList.add('hidden')
-const perfRows = ['tier', 'fps', 'p95', 'draw', 'tri', 'shop', 'street', 'tex', 'px', 'gpu'].map(id => {
+const perfRows = ['tier', 'fps', 'p95', 'draw', 'tri', 'shop', 'street', 'tex', 'px', 'gpu', 'exp'].map(id => {
   const row = document.createElement('div')
   row.dataset.key = id
   perfEl.append(row)
@@ -54,7 +68,7 @@ app.append(mount)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
 renderer.outputColorSpace = THREE.SRGBColorSpace
 renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 1.32
+renderer.toneMappingExposure = exposure
 renderer.shadowMap.enabled = profile.shadows
 renderer.shadowMap.type = THREE.PCFShadowMap
 renderer.setClearColor(DUSK, 1)
@@ -65,9 +79,9 @@ const scene = new THREE.Scene()
 scene.fog = new THREE.FogExp2(DUSK, FOG_DENSITY)
 scene.background = null
 scene.add(createSky())
-scene.add(new THREE.AmbientLight(0x9a8876, 1.2))
-scene.add(new THREE.HemisphereLight(0xc9d4ea, 0x8d7860, 1.2))
-const sun = new THREE.DirectionalLight(0xd5dced, 0.72)
+scene.add(new THREE.AmbientLight(0x8ea4c8, ambient))
+scene.add(new THREE.HemisphereLight(0x93a6c8, 0x3a342e, ambient * 0.55))
+const sun = new THREE.DirectionalLight(0xb7c6e4, 0.32)
 sun.position.set(-6, 7, -12)
 scene.add(sun, sun.target)
 if (profile.shadows) {
@@ -176,8 +190,8 @@ for (const lamp of active) {
   const shopLamp = lamp.name.startsWith('LIGHT_Shop')
   const light = new THREE.PointLight(
     color,
-    mode === 'toon' ? (shopLamp ? 1.25 : 0.95) : (shopLamp ? 2.2 : 1.6),
-    shopLamp ? 7.2 : 5.2,
+    mode === 'toon' ? (shopLamp ? 8.5 : 5) : (shopLamp ? 12 : 7),
+    shopLamp ? 3.3 : 4.2,
     2,
   )
   light.position.copy(lamp.position)
@@ -282,6 +296,8 @@ const api = {
     npcMissing: npcCover.missing.slice(0, 8),
   },
   frame: { pitch: 0, height: 0, feet: 0, head: 0 },
+  exp: exposure,
+  amb: ambient,
   hold: null as null | { x: number, y: number, z: number, parent: string },
   shopMeasure,
   licenses: THIRD_PARTY,
@@ -380,6 +396,7 @@ renderer.setAnimationLoop(() => {
     setRow(perfRows[7], `贴图 ${tex} / ${BUDGET.texture}`, tex > BUDGET.texture)
     setRow(perfRows[8], `px ${renderer.getPixelRatio().toFixed(2)}`, false)
     setRow(perfRows[9], `GPU ${gpu || '不可用'}`, false)
+    setRow(perfRows[10], `exp ${exposure.toFixed(2)}  amb ${ambient.toFixed(2)}`, false)
   }
   api.ready = true
   api.pixelRatio = renderer.getPixelRatio()
