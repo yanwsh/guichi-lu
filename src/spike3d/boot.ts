@@ -6,6 +6,7 @@ import { CameraRig } from './cameraRig'
 import { Collider } from './collision'
 import { FIGURE_TOP, Figure } from './figure'
 import { cloneSkinned, loadCharacterGlb, loadSceneGlb, measureShop, readHooks, tintMeshes, yawFromFacing } from './gltf'
+import { loadExternalTexture, resolveTextureCodec } from './textures'
 import { Stick } from './input'
 import { maxTextureSize, resolveMat, updateStyleLights, type MatMode } from './materials'
 import { THIRD_PARTY } from './notices'
@@ -25,7 +26,9 @@ const profile = resolveQuality(location.search)
 const mode: MatMode = resolveMat(location.search)
 const showPerf = params.get('perf') === '1'
 const shopGlb = params.get('shop') === 'glb'
-/** Tuned between the round-3 dusk and the round-4 beige wash. Override on device with ?exp= and ?amb=. */
+const streetGlb = params.get('street') !== 'box'
+const texCodec = resolveTextureCodec(location.search)
+/** Outdoor exposure locked by the v02h street sample. Override on device with ?exp= and ?amb=. */
 const DEFAULT_EXP = 1.28
 const DEFAULT_AMB = 1.2
 
@@ -103,8 +106,23 @@ if (shopGlb) {
   const url = `${import.meta.env.BASE_URL}assets/3d/SCN_SHOP_Interior_Whitebox.glb`
   shop = await loadSceneGlb(renderer, url, mode)
 }
-const world = buildWorld(mode, shop)
+let streetScene: THREE.Object3D | null = null
+if (streetGlb) {
+  try {
+    streetScene = await loadSceneGlb(renderer, `${import.meta.env.BASE_URL}assets/3d/SCN_LightFog_Sample_v02h.glb`, mode, { lookdev: true, zone: 'street' })
+    if (texCodec === 'ktx2') {
+      const trim = await loadExternalTexture(renderer, 'T_Trim_Jiangnan_baseColor', 'ktx2')
+      if (!trim) console.info('3d spike: ktx2 trim is not authored yet, embedded webp stays')
+      else applyTrim(streetScene, trim)
+    }
+  } catch (err) {
+    console.warn('street lookdev skipped', err)
+    streetScene = null
+  }
+}
+const world = buildWorld(mode, shop, streetScene == null)
 scene.add(world.root)
+if (streetScene) world.root.add(streetScene)
 if (shopGlb) {
   try {
     const wall = await loadSceneGlb(renderer, `${import.meta.env.BASE_URL}assets/3d/SM_STREET_WallA.glb`, mode)
@@ -117,6 +135,12 @@ if (shopGlb) {
 }
 
 const hooks = readHooks(world.root)
+const streetMark = streetScene?.getObjectByName('REF_Spawn')
+if (streetMark) {
+  streetMark.getWorldPosition(hooks.spawn)
+  const facing = streetMark.userData?.dengdu?.facing
+  if (typeof facing === 'string') hooks.facing = facing
+}
 const body = new Collider(world.root, 'body')
 const walls = new Collider(world.root, 'camera')
 const walker = new Walker(hooks.spawn)
@@ -183,25 +207,40 @@ if (npcs[0]) npcCover = boneCoverage(npcs[0].fig.root, externalClips)
 if (heroCover.missing.length) console.warn('3d spike: hero clip tracks did not bind', `${heroCover.hit}/${heroCover.tracks}`, heroCover.missing.slice(0, 6))
 if (npcCover.missing.length) console.warn('3d spike: npc clip tracks did not bind', `${npcCover.hit}/${npcCover.tracks}`, npcCover.missing.slice(0, 6))
 
-const lampOrder = ['LIGHT_Shop_Lantern_01', 'LIGHT_Street_Eave', 'LIGHT_Shop_Lantern_02', 'LIGHT_Street_Pharmacy']
-const sorted = [...hooks.lights].sort((a, b) => rank(a.name, lampOrder) - rank(b.name, lampOrder))
-const active = sorted.slice(0, profile.pointLights)
+const LANTERN_BUDGET = Math.min(4, profile.pointLights)
 const pointLights: { light: THREE.PointLight, color: THREE.Color, position: THREE.Vector3 }[] = []
-for (const lamp of active) {
-  const color = lamp.kelvin ? kelvinColor(lamp.kelvin) : new THREE.Color(lamp.color)
-  const shopLamp = lamp.name.startsWith('LIGHT_Shop')
-  const light = new THREE.PointLight(
-    color,
-    mode === 'toon' ? (shopLamp ? 8.5 : 5) : (shopLamp ? 12 : 7),
-    shopLamp ? 3.3 : 4.2,
-    2,
-  )
-  light.position.copy(lamp.position)
-  light.position.y -= 0.55
+for (let i = 0; i < LANTERN_BUDGET; i++) {
+  const color = new THREE.Color(0xffb35c)
+  const light = new THREE.PointLight(color, 0, 4.5, 2)
   light.castShadow = false
   scene.add(light)
-  pointLights.push({ light, color, position: lamp.position })
+  pointLights.push({ light, color, position: new THREE.Vector3() })
 }
+function aimLanterns() {
+  const ranked = [...hooks.lights].sort((a, b) => {
+    const da = (a.position.x - walker.pos.x) ** 2 + (a.position.z - walker.pos.z) ** 2
+    const db = (b.position.x - walker.pos.x) ** 2 + (b.position.z - walker.pos.z) ** 2
+    return da - db
+  })
+  for (let i = 0; i < pointLights.length; i++) {
+    const lamp = ranked[i]
+    const item = pointLights[i]
+    if (!lamp) {
+      item.light.intensity = 0
+      continue
+    }
+    const color = lamp.kelvin ? kelvinColor(lamp.kelvin) : new THREE.Color(lamp.color)
+    const shopLamp = lamp.name.startsWith('LIGHT_Shop')
+    item.color.copy(color)
+    item.position.copy(lamp.position)
+    item.light.color.copy(color)
+    item.light.position.copy(lamp.position)
+    item.light.position.y -= 0.55
+    item.light.distance = lamp.range || (shopLamp ? 3.3 : 4.5)
+    item.light.intensity = lamp.intensity ?? (mode === 'toon' ? (shopLamp ? 8.5 : 6) : (shopLamp ? 12 : 8))
+  }
+}
+aimLanterns()
 const halos: THREE.Sprite[] = []
 if (!profile.bloom) {
   halos.push(...createLanternHalos(hooks.lights.map(lamp => lamp.position), LANTERN))
@@ -369,6 +408,7 @@ renderer.setAnimationLoop(() => {
     sun.target.position.set(walker.pos.x, 0.8, walker.pos.z)
     sun.target.updateMatrixWorld()
   }
+  aimLanterns()
   updateStyleLights(
     world.styled,
     rig.camera.position,
@@ -442,9 +482,18 @@ function countZone(root: THREE.Object3D, zone: string): number {
   return total
 }
 
-function rank(name: string, order: string[]): number {
-  const index = order.indexOf(name)
-  return index === -1 ? order.length : index
+function applyTrim(root: THREE.Object3D, tex: THREE.Texture) {
+  root.traverse(obj => {
+    const mesh = obj as THREE.Mesh
+    if (!mesh.isMesh) return
+    const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+    for (const mat of list) {
+      if (mat?.name !== 'M_Trim_Jiangnan') continue
+      const std = mat as THREE.MeshStandardMaterial
+      std.map = tex
+      std.needsUpdate = true
+    }
+  })
 }
 
 declare global {

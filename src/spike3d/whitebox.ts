@@ -15,7 +15,7 @@ export interface Built {
  * origin at the threshold, +X toward the pharmacy, +Z into the shop, beam clearance 2.8 m.
  * The street is outside, negative Z, 22 m along X by 3.2 m wide.
  */
-export function buildWorld(mode: MatMode, shop: THREE.Object3D | null): Built {
+export function buildWorld(mode: MatMode, shop: THREE.Object3D | null, streetVisual = true): Built {
   const root = new THREE.Group()
   root.name = 'WORLD'
   const styled: THREE.Material[] = []
@@ -25,8 +25,8 @@ export function buildWorld(mode: MatMode, shop: THREE.Object3D | null): Built {
     shop.userData.zone = 'shop'
     root.add(shop)
   }
-  const street = buildStreet(mode, styled, occluders)
-  street.add(createRiverMist())
+  const street = buildStreet(mode, styled, occluders, streetVisual)
+  if (streetVisual) street.add(createRiverMist())
   root.add(street)
   const bowl = makeBowl(mode)
   bowl.position.set(0.55, 0.86, 4.45)
@@ -115,9 +115,16 @@ function buildShop(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mes
   return shop
 }
 
-function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[]) {
+function buildStreet(mode: MatMode, styled: THREE.Material[], occluders: THREE.Mesh[], visual = true) {
   const street = new THREE.Group()
   street.name = 'STREET'
+  if (!visual) {
+    anchor(street, 'INT_TR_C01_01_CHENG', 1.15, 0, -1.15, { radius_m: 1.5, role: 'talk' })
+    anchor(street, 'INT_TR_C01_01_HE', 7, 0, -1.5, { radius_m: 1.5, role: 'talk' })
+    anchor(street, 'NPC_Cheng', 1.15, 0, -1.35, { facing: '+Z' })
+    anchor(street, 'NPC_He', 7.45, 0, -1.15, { facing: '-X' })
+    return street
+  }
   const stone = lit(mode, 0x8a90a4, streetLightmap(), 0.9, 0.42)
   const plaster = lit(mode, 0xc9bfb4, null)
   const timber = lit(mode, 0x4a3428, null)

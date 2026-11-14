@@ -8,8 +8,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 export const HORIZON = new THREE.Color(0xf2a06a)
 export const ZENITH = new THREE.Color(0x34366e)
 export const LANTERN = new THREE.Color(0xff890e)
-/** Single dusk fog. Art lock: FogExp2 density 0.022, one colour, no custom fog shader. */
-export const DUSK = new THREE.Color(0xc47b62)
+/** Single dusk fog. Art lock from the v02h street sample: FogExp2 0x7d7f98, density 0.022. */
+export const DUSK = new THREE.Color(0x7d7f98)
 export const FOG_DENSITY = 0.022
 
 /** Tanner Helland approximation. 2000 K is the lantern practical. */

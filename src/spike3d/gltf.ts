@@ -25,6 +25,8 @@ export interface LightAnchor {
   color: string
   range: number
   kelvin?: number
+  /** Art hint. Absent on the whitebox lanterns, which keep the shop tuning. */
+  intensity?: number
 }
 
 export interface InteractAnchor {
@@ -51,7 +53,13 @@ const LAMP_ALIAS: Record<string, string> = {
   INT_TODO_REPAIRED_LAMP: 'TR_C01_01_PRICE',
 }
 
-export async function loadSceneGlb(renderer: THREE.WebGLRenderer, url: string, mode: MatMode): Promise<THREE.Group> {
+export interface SceneLoadOptions {
+  /** Keep authored maps. COLOR_0.r is wetness, not a vertex tint. */
+  lookdev?: boolean
+  zone?: string
+}
+
+export async function loadSceneGlb(renderer: THREE.WebGLRenderer, url: string, mode: MatMode, options: SceneLoadOptions = {}): Promise<THREE.Group> {
   await MeshoptDecoder.ready
   const loader = new GLTFLoader()
   loader.setMeshoptDecoder(MeshoptDecoder)
@@ -70,15 +78,52 @@ export async function loadSceneGlb(renderer: THREE.WebGLRenderer, url: string, m
         mesh.visible = false
         return
       }
-      ensureStyleUv(mesh.geometry)
-      restyleMesh(mesh, mode)
       mesh.castShadow = false
       mesh.receiveShadow = true
-      mesh.userData.zone = mesh.userData.zone || 'shop'
+      mesh.userData.zone = options.zone || mesh.userData.zone || 'shop'
+      if (options.lookdev) applyLookdev(mesh)
+      else {
+        ensureStyleUv(mesh.geometry)
+        restyleMesh(mesh, mode)
+      }
     })
     return gltf.scene
   } finally {
     ktx2.dispose()
+  }
+}
+
+/** COLOR_0.r is the authored wetness. G and B are not albedo, so vertex colors stay off. */
+function applyLookdev(mesh: THREE.Mesh) {
+  const blend = mesh.userData?.dengdu?.blend as string | undefined
+  const color = mesh.geometry.getAttribute('color')
+  if (color) {
+    const wet = new Float32Array(color.count)
+    for (let i = 0; i < color.count; i++) wet[i] = color.getX(i)
+    mesh.geometry.setAttribute('wetness', new THREE.BufferAttribute(wet, 1))
+  }
+  const list = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+  for (const mat of list) {
+    if (!mat) continue
+    const std = mat as THREE.MeshStandardMaterial
+    std.vertexColors = false
+    if (blend === 'additive') {
+      std.transparent = true
+      std.blending = THREE.AdditiveBlending
+      std.depthWrite = false
+    }
+    if (!color) continue
+    std.onBeforeCompile = shader => {
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute float wetness;\nvarying float vWet;\n')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\n\tvWet = wetness;\n')
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nvarying float vWet;\n')
+        .replace('#include <color_fragment>', `#include <color_fragment>
+	diffuseColor.rgb *= mix(vec3(1.0), vec3(0.62, 0.72, 0.82), clamp(vWet, 0.0, 1.0));`)
+    }
+    const previous = std.customProgramCacheKey?.bind(std)
+    std.customProgramCacheKey = () => `${previous ? previous() : ''}|street-wet-v1`
   }
 }
 
@@ -122,6 +167,7 @@ export function readHooks(root: THREE.Object3D): SceneHooks {
       color?: string
       range_m?: number
       kelvin?: number
+      intensity_hint?: number
       facing?: string
       hide_on_load?: boolean
       role?: string
@@ -143,8 +189,9 @@ export function readHooks(root: THREE.Object3D): SceneHooks {
         color: extra.color ?? '#ff890e',
         range: extra.range_m ?? 5.5,
         kelvin: extra.kelvin,
+        intensity: typeof extra.intensity_hint === 'number' ? extra.intensity_hint : undefined,
       })
-    } else if (name === 'SPAWN_player' || name === 'REF_Spawn') {
+    } else if (name === 'SPAWN_player') {
       hooks.spawn.copy(obj.getWorldPosition(new THREE.Vector3()))
       if (extra.facing) hooks.facing = extra.facing
     } else if (name.startsWith('NPC_')) {
